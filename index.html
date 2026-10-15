@@ -287,6 +287,18 @@
   .auth-switch button:hover{text-decoration:underline}
   .auth-tip{margin-top:13px;font-size:11.5px;color:var(--muted-2);line-height:1.75;text-align:center}
 
+  /* ---------- 服务管理弹窗（复用登录弹窗的骨架） ---------- */
+  .auth-dlg .fld select,.auth-dlg .fld textarea{
+    width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-size:13.5px;
+    font-family:inherit;color:var(--text);background:#fff;outline:none;transition:border-color .16s,box-shadow .16s;
+  }
+  .auth-dlg .fld textarea{min-height:74px;resize:vertical;line-height:1.6}
+  .auth-dlg .fld select:focus,.auth-dlg .fld textarea:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(79,70,229,.12)}
+  .auth-dlg .fld .row{display:flex;gap:10px}
+  .auth-dlg .fld .row>div{flex:1;min-width:0}
+  .auth-dlg .fld .ck{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#3c4453;cursor:pointer}
+  .auth-dlg .fld .ck input{width:auto;margin:0}
+
   /* ---------- 登录态：头像 + 悬浮菜单 ---------- */
   .user-menu{position:relative}
   .user-btn{
@@ -371,9 +383,10 @@
                 <span id="user-email">—</span>
               </div>
             </div>
-            <div class="ud-sep"></div>
-            <button class="ud-item" type="button" role="menuitem" data-user-act="profile">个人中心</button>
-            <button class="ud-item danger" type="button" role="menuitem" data-user-act="logout">退出登录</button>
+          <div class="ud-sep"></div>
+          <button class="ud-item" type="button" role="menuitem" data-user-act="profile">个人中心</button>
+          <button class="ud-item" type="button" role="menuitem" data-user-act="admin" id="ud-admin" style="display:none">服务管理</button>
+          <button class="ud-item danger" type="button" role="menuitem" data-user-act="logout">退出登录</button>
           </div>
         </div>
       </div>
@@ -540,22 +553,75 @@
   </div>
 </div>
 
+<!-- ==================== 服务管理：新增 / 编辑弹窗 ==================== -->
+<div class="auth-mask" id="mask-svc">
+  <div class="auth-dlg" role="dialog" aria-modal="true" aria-labelledby="svc-dlg-title">
+    <button class="cls" type="button" data-svc-close aria-label="关闭">×</button>
+    <h2 id="svc-dlg-title">编辑服务</h2>
+    <p class="sub">改完点保存，首页的服务与价格会立即更新。</p>
+
+    <div class="msg" id="svc-msg"></div>
+
+    <form id="form-svc" novalidate>
+      <input type="hidden" name="svcId" />
+      <div class="fld">
+        <label for="svc-name">服务名称</label>
+        <input type="text" name="svcName" id="svc-name" placeholder="例如：娱乐陪玩" maxlength="20" />
+        <div class="err" id="svc-name-err"></div>
+      </div>
+      <div class="row">
+        <div class="fld">
+          <label for="svc-price">价格（元）</label>
+          <input type="number" name="svcPrice" id="svc-price" min="0" step="0.01" placeholder="25" />
+          <div class="err" id="svc-price-err"></div>
+        </div>
+        <div class="fld">
+          <label for="svc-unit">计价单位</label>
+          <input type="text" name="svcUnit" id="svc-unit" placeholder="局 / 小时 / 周" maxlength="6" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="fld">
+          <label for="svc-risk">风险等级</label>
+          <select name="svcRisk" id="svc-risk">
+            <option value="低">低</option>
+            <option value="中高">中高</option>
+          </select>
+        </div>
+        <div class="fld">
+          <label for="svc-sort">排序（小的靠前）</label>
+          <input type="number" name="svcSort" id="svc-sort" min="0" step="1" />
+        </div>
+      </div>
+      <div class="fld">
+        <label for="svc-desc">服务描述</label>
+        <textarea name="svcDesc" id="svc-desc" placeholder="一两句话说清这项服务是什么、适合谁" maxlength="80"></textarea>
+      </div>
+      <label class="ck"><input type="checkbox" name="svcActive" checked /> 上架中（取消勾选则首页不再展示）</label>
+      <div class="go">
+        <button class="btn btn-primary btn-lg" type="submit" id="svc-submit">保存</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script>
 /* =========================================================
    七号电竞 · 客户端
    ========================================================= */
 
-/* 产品矩阵与定价：对齐策划案 5.3 */
+/* 产品矩阵与定价：数据库不可用时的兜底数据（正式数据在 Supabase 的 services 表，可在「服务管理」里改） */
 const SERVICES = [
   {id:'P1', name:'娱乐陪玩', price:25,  unit:'局',  risk:'低',   desc:'聊天、陪跑图、普通组队，适合新手与休闲玩家'},
   {id:'P2', name:'技术陪玩', price:60,  unit:'小时',risk:'低',   desc:'带节奏、教资源点与路线，想提升效率选它'},
-  {id:'P3', name:'护航（保底版）', price:100, unit:'小时', risk:'中高', desc:'陪同进图、配合保护，含保底条款'},
-  {id:'P4', name:'战术教学', price:80,  unit:'小时',risk:'低',   desc:'地图资源点、撤离路线、赛后复盘'},
-  {id:'P5', name:'包周套餐', price:688, unit:'周',  risk:'低',   desc:'固定队友、优先派单、按单量折扣'}
+  {id:'P3', name:'护航（保底版）', price:100, unit:'小时', risk:'中高', desc:'陪同进图、配合保护，含保底条款'}
 ];
 
 const state = {
   page:'home',
+  /* 服务列表：启动时先用兜底数据，loadServices() 会用品库数据替换 */
+  services: SERVICES.map((s,i)=>({...s, sort:i+1, active:true})),
+  isAdmin:false,
   /* —— 店铺装修 —— */
   banner:0,
   invite:{code:'QH7-8823', invited:3, reward:36}
@@ -564,6 +630,54 @@ const state = {
 const $ = s => document.querySelector(s);
 const money = n => '¥' + (Math.round(n*100)/100).toLocaleString('zh-CN');
 const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* =========================================================
+   服务与价格：数据库读写
+   读：所有人（RLS 放开 select）
+   写：只有 public.admins 表里的用户（RLS 在数据库侧判定，不靠前端）
+   ========================================================= */
+async function loadServices(){
+  try {
+    if (!supabaseClient || typeof supabaseClient.from !== 'function') return;
+    const { data, error } = await supabaseClient.from('services').select('*').order('sort');
+    /* 表还没建或还没灌数据时，继续用兜底数据，不打扰访客 */
+    if (error || !data || !data.length) return;
+    state.services = data;
+    if (state.page === 'home') render();
+  } catch (err) {
+    /* 表不存在、网络异常等都静默降级，首页继续用兜底数据 */
+  }
+}
+
+/* 当前登录者是不是管理员；顺带控制头像菜单里「服务管理」入口的显隐 */
+async function checkAdmin(){
+  state.isAdmin = false;
+  const entry = document.getElementById('ud-admin');
+  if (entry) entry.style.display = 'none';
+  try {
+    if (!supabaseClient || typeof supabaseClient.from !== 'function' || !currentUser) return;
+    const { data, error } = await supabaseClient
+      .from('admins').select('user_id').eq('user_id', currentUser.id).maybeSingle();
+    state.isAdmin = !error && !!data;
+  } catch (err) {
+    state.isAdmin = false;
+  }
+  if (entry) entry.style.display = state.isAdmin ? 'block' : 'none';
+  /* 判定是异步的，如果正停在服务管理页就按新结果重绘一次 */
+  if (state.page === 'admin') render();
+}
+
+async function saveService(row){
+  if (!supabaseClient) throw new Error('认证服务未加载，请刷新页面重试');
+  const { error } = await supabaseClient.from('services').upsert(row);
+  if (error) throw new Error(error.message);
+}
+
+async function removeService(id){
+  if (!supabaseClient) throw new Error('认证服务未加载，请刷新页面重试');
+  const { error } = await supabaseClient.from('services').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+}
 
 /* 当前登录用户（Supabase user 对象），未登录为 null */
 let currentUser = null;
@@ -774,6 +888,7 @@ document.addEventListener('click', e => {
   const a = document.activeElement;
   if (a && a.closest && a.closest('#user-menu')) a.blur();
   if (act === 'profile'){ go('profile'); return; }
+  if (act === 'admin'){ go('admin'); return; }
   if (act === 'logout'){ signOut(); return; }
 });
 
@@ -958,6 +1073,7 @@ document.addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
   closeUserMenu();
   closeAuthModals();
+  closeSvcModal();
 });
 
 if (supabaseClient) {
@@ -978,14 +1094,17 @@ if (supabaseClient) {
       document.getElementById('auth-box').style.display = 'none';
       document.getElementById('user-box').style.display = 'flex';
       paintUser(user);
+      checkAdmin();
       /* 未登录时进不去个人中心，登录后如果正停在那一页就重绘一次 */
-      if (state.page === 'profile') render();
+      if (state.page === 'profile' || state.page === 'admin') render();
     } else {
       currentUser = null;
+      state.isAdmin = false;
       document.getElementById('auth-box').style.display = 'flex';
       document.getElementById('user-box').style.display = 'none';
       closeUserMenu();
-      if (state.page === 'profile'){ state.page = 'home'; render(); }
+      checkAdmin();
+      if (state.page === 'profile' || state.page === 'admin'){ state.page = 'home'; render(); }
     }
   });
 
@@ -1034,7 +1153,7 @@ function pageHome(){
     <div class="in">
       <div class="kicker">平台唯一下单入口 · 全流程留痕</div>
       <h1>不用等野队，也不用踩坑<br>找个靠谱的人陪你打《三角洲行动》</h1>
-      <p>娱乐陪玩、技术陪玩、护航（保底版）、战术教学、包周套餐——在平台自助选服务、选时段，系统按打手排班与等级自动匹配。先付款、后服务，凭证留痕、有客服、有售后。</p>
+      <p>娱乐陪玩、技术陪玩、护航（保底版）——在平台自助选服务、选时段，系统按打手排班与等级自动匹配。先付款、后服务，凭证留痕、有客服、有售后。</p>
       <div class="acts">
         <button class="btn" data-scroll="svc-title">查看服务与价格</button>
         <button class="btn ghost" data-nav="safety">查看服务与安全规则</button>
@@ -1054,7 +1173,7 @@ function pageHome(){
 
   <div class="sec-title" id="svc-title">服务与价格</div>
   <div class="grid g3">
-    ${SERVICES.map(s=>`
+    ${state.services.filter(s=>s.active!==false).map(s=>`
       <div class="svc plain">
         <div class="top">
           <div>
@@ -1093,7 +1212,7 @@ function pageHome(){
     <div class="card">
       <div class="card-h"><h3>需要您知悉</h3></div>
       <div class="callout co-warn">
-        游戏官方不鼓励此类付费服务，账号存在触发官方风控的风险；如发生账号异常，工作室不承担账号损失，但会协助您申诉。普通陪玩（P1 / P2 / P4）不涉及账号风险，试运营期优先开放。
+        游戏官方不鼓励此类付费服务，账号存在触发官方风控的风险；如发生账号异常，工作室不承担账号损失，但会协助您申诉。普通陪玩（P1 / P2）不涉及账号风险，试运营期优先开放。
       </div>
       <div class="kv" style="margin-top:10px"><span>服务未开始，您取消</span><span>全额退款</span></div>
       <div class="kv"><span>服务已开始，您单方中断</span><span>按已完成局数 / 时长结算</span></div>
@@ -1218,15 +1337,107 @@ function pageProfile(){
   </div>`;
 }
 
+/* ========================= 服务管理（仅管理员） ========================= */
+function pageAdmin(){
+  if (!currentUser) return `<div class="callout co-warn">请先登录管理员账号。</div>`;
+  if (!state.isAdmin){
+    return `
+    <div class="callout co-warn" style="margin-bottom:14px">
+      无权限：当前账号不在管理员名单里。需要用 SQL 把你的用户 ID 加进 <code>public.admins</code> 表：
+      <code style="display:block;margin-top:6px">insert into public.admins (user_id) values ('${esc(currentUser.id)}');</code>
+    </div>
+    <div class="card"><div class="card-h"><h3>当前登录账号</h3></div>
+      <div class="kv"><span>邮箱</span><span>${esc(currentUser.email || '—')}</span></div>
+      <div class="kv"><span>用户 ID</span><span>${esc(currentUser.id)}</span></div>
+    </div>`;
+  }
+
+  const rows = state.services;
+  const body = rows.map(s => `
+    <tr>
+      <td class="num">${esc(s.id)}</td>
+      <td>${esc(s.name)}</td>
+      <td class="num">${money(s.price)}</td>
+      <td>${esc(s.unit)}</td>
+      <td><span class="badge ${s.risk==='中高'?'b-amber':'b-green'}">${esc(s.risk)}</span></td>
+      <td style="color:var(--muted)">${esc(s.desc || '—')}</td>
+      <td>${s.active ? '<span class="badge b-green">上架中</span>' : '<span class="badge b-gray">已下架</span>'}</td>
+      <td>
+        <div class="acts">
+          <button class="btn btn-sm" data-svc-edit="${esc(s.id)}">编辑</button>
+          <button class="btn btn-sm" style="color:var(--red)" data-svc-del="${esc(s.id)}">删除</button>
+        </div>
+      </td>
+    </tr>`).join('');
+
+  return `
+  <div class="callout co-info" style="margin-bottom:16px">
+    这里维护首页「服务与价格」的内容。保存后立即生效，访客刷新页面就能看到。
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h3>服务列表</h3><span class="hint">共 ${rows.length} 项</span></div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th>编号</th><th>名称</th><th>价格</th><th>单位</th><th>风险</th><th>描述</th><th>状态</th><th>操作</th></tr></thead>
+        <tbody>
+          ${body || '<tr><td colspan="8"><div class="empty">还没有服务，点右上角「新增服务」</div></td></tr>'}
+        </tbody>
+      </table>
+    </div>
+    <div class="acts" style="margin-top:14px">
+      <button class="btn btn-primary" data-svc-add="1">新增服务</button>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <div class="card-h"><h3>管理员是怎么判定的</h3></div>
+    <div class="kv"><span>数据库表</span><span>public.admins（一行 = 一个管理员）</span></div>
+    <div class="kv"><span>读取权限</span><span>所有人可读 services 表</span></div>
+    <div class="kv"><span>写入权限</span><span>只有 admins 表命中的用户可以 insert / update / delete</span></div>
+    <div class="callout co-warn" style="margin-top:12px">
+      页面上的「服务管理」入口只是给人看的；真正的拦截在数据库的行级安全（RLS）里，所以即使别人拿到公开的 anon key 也改不动。
+    </div>
+  </div>`;
+}
+
+/* 打开新增 / 编辑弹窗 */
+function openSvcEditor(id){
+  const row = id ? state.services.find(s => String(s.id) === String(id)) : null;
+  const f = document.getElementById('form-svc');
+  if (!f) return;
+  const el = f.elements;
+  f.reset();
+  dialogMsg('svc-msg', '');
+  el.svcId.value    = row ? row.id : ('P' + Date.now().toString().slice(-6));
+  el.svcName.value  = row ? row.name : '';
+  el.svcPrice.value = row ? row.price : '';
+  el.svcUnit.value  = row ? row.unit : '局';
+  el.svcRisk.value  = row ? row.risk : '低';
+  el.svcDesc.value  = row ? (row.desc || '') : '';
+  el.svcSort.value  = row ? (row.sort || 0) : state.services.length + 1;
+  el.svcActive.checked = row ? !!row.active : true;
+  document.getElementById('svc-dlg-title').textContent = row ? '编辑服务' : '新增服务';
+  document.getElementById('mask-svc').classList.add('show');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => el.svcName.focus(), 60);
+}
+function closeSvcModal(){
+  const m = document.getElementById('mask-svc');
+  if (m) m.classList.remove('show');
+  document.body.style.overflow = '';
+}
+
 /* ========================= 路由 ========================= */
 const PAGES = {
   home:['新赛季，找个靠谱的队友','服务与价格 · 下单流程 · 平台保障'],
   safety:['服务与安全规则','服务标准 · 打手红线 · 常见问题'],
-  profile:['个人中心','账号信息 · 安全设置 · 我的数据']
+  profile:['个人中心','账号信息 · 安全设置 · 我的数据'],
+  admin:['服务管理','维护服务与价格 · 仅管理员可见']
 };
-/* 顶部导航只保留「首页」与「服务与安全规则」；个人中心从右上角头像菜单进入 */
+/* 顶部导航只保留「首页」与「服务与安全规则」；个人中心从右上角头像菜单进入，服务管理仅管理员可见 */
 const NAVS = [['home','首页'],['safety','服务与安全规则']];
-const RENDER = {home:pageHome, safety:pageSafety, profile:pageProfile};
+const RENDER = {home:pageHome, safety:pageSafety, profile:pageProfile, admin:pageAdmin};
 
 function renderNav(){
   $('#navigation').innerHTML = NAVS.map(n=>
@@ -1239,7 +1450,11 @@ function render(){
 function go(page){ state.page = page; render(); window.scrollTo(0,0); }
 
 document.addEventListener('click', e=>{
-  const t = e.target.closest('[data-nav],[data-scroll],[data-banner],[data-poster]');
+  /* 点遮罩空白处关掉服务管理弹窗 */
+  if (e.target.id === 'mask-svc'){ closeSvcModal(); return; }
+  if (e.target.closest('[data-svc-close]')){ closeSvcModal(); return; }
+
+  const t = e.target.closest('[data-nav],[data-scroll],[data-banner],[data-poster],[data-svc-edit],[data-svc-del],[data-svc-add]');
   if(!t) return;
   const d = t.dataset;
 
@@ -1251,9 +1466,59 @@ document.addEventListener('click', e=>{
   }
   if(d.banner!==undefined){ state.banner = +d.banner; render(); return; }
   if(d.poster){ toast('演示占位：专属海报已生成（正式版需接入公众号/服务号后分享）', true); return; }
+  if(d.svcEdit!==undefined){ openSvcEditor(d.svcEdit); return; }
+  if(d.svcAdd!==undefined){ openSvcEditor(null); return; }
+  if(d.svcDel!==undefined){
+    const row = state.services.find(s => String(s.id) === String(d.svcDel));
+    if (!row) return;
+    if (!confirm('确定删除「' + row.name + '」？删除后不可恢复。')) return;
+    removeService(row.id)
+      .then(async () => { await loadServices(); render(); toast('已删除：' + row.name, true); })
+      .catch(err => toast('删除失败：' + err.message));
+    return;
+  }
 });
 
 render();
+
+/* 启动时把库里的服务数据读进来（读不到就继续用兜底数据） */
+loadServices();
+
+/* 服务管理弹窗：保存 */
+document.getElementById('form-svc').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (!state.isAdmin) return;
+  const f = e.target;
+  const el = f.elements;
+  const name = el.svcName.value.trim();
+  const price = Number(el.svcPrice.value);
+  fieldErr('svc-name', 'svc-name-err', name ? '' : '请填写服务名称');
+  fieldErr('svc-price', 'svc-price-err', (price >= 0 && el.svcPrice.value !== '') ? '' : '请填写正确的价格');
+  if (!name || !(price >= 0) || el.svcPrice.value === '') return;
+
+  const row = {
+    id: el.svcId.value,
+    name: name,
+    price: price,
+    unit: el.svcUnit.value.trim() || '局',
+    risk: el.svcRisk.value,
+    desc: el.svcDesc.value.trim(),
+    sort: Number(el.svcSort.value) || 0,
+    active: el.svcActive.checked
+  };
+  try {
+    setBusy('svc-submit', true, '保存中…');
+    await saveService(row);
+    closeSvcModal();
+    await loadServices();
+    render();
+    toast('已保存：' + row.name, true);
+  } catch (err) {
+    dialogMsg('svc-msg', '保存失败：' + err.message, 'err');
+  } finally {
+    setBusy('svc-submit', false);
+  }
+});
 
 /* BANNER 自动轮播（仅切换首页，避免整页重绘） */
 setInterval(()=>{
