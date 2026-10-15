@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <head>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL = 'https://ynofozbidmqajodumqvw.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJ...sb_publishable_tm1ZZcHwJoo1rrMlx4Pfsw_evjmMNp_';
+const SUPABASE_ANON_KEY = 'sb_publishable_tm1ZZcHwJoo1rrMlx4Pfsw_evjmMNp_';
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 </script>
@@ -254,7 +253,16 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     <nav class="navlinks" id="navigation"></nav>
     <div class="nav-right">
       <div class="pill pill-online">客服在线 12:00—14:00 / 18:00—23:00</div>
-      <div class="avatar">我</div>
+      <div id="auth-box">
+        <input type="email" id="email" placeholder="邮箱" style="width:130px;padding:5px 8px;border:1px solid var(--line);border-radius:7px;font-size:12px" />
+        <input type="password" id="password" placeholder="密码" style="width:110px;padding:5px 8px;border:1px solid var(--line);border-radius:7px;font-size:12px" />
+        <button class="btn btn-sm btn-primary" id="btn-login">登录</button>
+        <button class="btn btn-sm" id="btn-signup">注册</button>
+      </div>
+      <div id="user-box" style="display:none;align-items:center;gap:8px">
+        <span style="font-size:12px;color:var(--muted)" id="user-email"></span>
+        <button class="btn btn-sm" id="btn-logout">退出</button>
+      </div>
     </div>
   </div>
 </header>
@@ -347,7 +355,50 @@ function toast(msg, ok){
   const t = $('#toast'); t.textContent = msg; t.className = 'toast show' + (ok?' ok':'');
   clearTimeout(t._tm); t._tm = setTimeout(()=>t.className='toast', 2600);
 }
+async function signUp(email, password) {
+  const { data, error } = await supabase.auth.signUp({ email, password });
+  if (error) return alert('注册失败：' + error.message);
+  alert('注册成功！');
+}
 
+async function signIn(email, password) {
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) return alert('登录失败：' + error.message);
+  location.reload();
+}
+
+async function signOut() {
+  await supabase.auth.signOut();
+  location.reload();
+}
+document.getElementById('btn-signup').addEventListener('click', () => {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  if (!email || !password) return alert('请填写邮箱和密码');
+  signUp(email, password);
+});
+
+document.getElementById('btn-login').addEventListener('click', () => {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  if (!email || !password) return alert('请填写邮箱和密码');
+  signIn(email, password);
+});
+
+document.getElementById('btn-logout').addEventListener('click', () => {
+  signOut();
+});
+supabase.auth.onAuthStateChange((event, session) => {
+  const user = session?.user;
+  if (user) {
+    document.getElementById('auth-box').style.display = 'none';
+    document.getElementById('user-box').style.display = 'block';
+    document.getElementById('user-email').textContent = user.email;
+  } else {
+    document.getElementById('auth-box').style.display = 'block';
+    document.getElementById('user-box').style.display = 'none';
+  }
+});
 function initSched(){
   state.sched = {};
   DAYS.forEach((d,di)=>{
