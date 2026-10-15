@@ -2,12 +2,12 @@
 <html lang="zh-CN">
 <head>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabaseClient/supabaseClient-js@2"></script>
 <script>
-const SUPABASE_URL = 'https://ynofozbidmqajodumqvw.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_tm1ZZcHwJoo1rrMlx4Pfsw_evjmMNp_';
+const supabaseClient_URL = 'https://ynofozbidmqajodumqvw.supabaseClient.co';
+const supabaseClient_ANON_KEY = 'sb_publishable_tm1ZZcHwJoo1rrMlx4Pfsw_evjmMNp_';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = window.supabaseClient.createClient(supabaseClient_URL, supabaseClient_ANON_KEY);
 </script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -356,19 +356,19 @@ function toast(msg, ok){
   clearTimeout(t._tm); t._tm = setTimeout(()=>t.className='toast', 2600);
 }
 async function signUp(email, password) {
-  const { data, error } = await supabase.auth.signUp({ email, password });
+  const { data, error } = await supabaseClient.auth.signUp({ email, password });
   if (error) return alert('注册失败：' + error.message);
   alert('注册成功！');
 }
 
 async function signIn(email, password) {
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
   if (error) return alert('登录失败：' + error.message);
   location.reload();
 }
 
 async function signOut() {
-  await supabase.auth.signOut();
+  await supabaseClient.auth.signOut();
   location.reload();
 }
 document.getElementById('btn-signup').addEventListener('click', () => {
@@ -388,7 +388,7 @@ document.getElementById('btn-login').addEventListener('click', () => {
 document.getElementById('btn-logout').addEventListener('click', () => {
   signOut();
 });
-supabase.auth.onAuthStateChange((event, session) => {
+supabaseClient.auth.onAuthStateChange((event, session) => {
   const user = session?.user;
   if (user) {
     document.getElementById('auth-box').style.display = 'none';
