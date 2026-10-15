@@ -1,9 +1,18 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <head>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = 'https://ynofozbidmqajodumqvw.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJ...sb_publishable_tm1ZZcHwJoo1rrMlx4Pfsw_evjmMNp_';
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>七号电竞 · 陪玩平台（客户端 · 电脑版）</title>
+<title>七号电竞 · 陪玩平台</title>
 <style>
   :root{
     --bg:#f5f6f8; --panel:#fff; --line:#e5e7eb; --line-soft:#f1f2f4;
@@ -262,7 +271,7 @@
 
 <script>
 /* =========================================================
-   七号电竞 · 客户端（电脑版）
+   七号电竞 · 客户端
    ========================================================= */
 
 const LVRANK = {'普通':1,'魔王':2,'明星':3};
