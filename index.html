@@ -277,6 +277,7 @@
   .auth-dlg .msg.show{display:block}
   .auth-dlg .msg.err{background:var(--red-soft);border:1px solid #f6d4d4;color:#a51f1f}
   .auth-dlg .msg.ok{background:var(--green-soft);border:1px solid #cbe9d6;color:#0b6b3f}
+  .auth-dlg .msg.warn{background:var(--amber-soft);border:1px solid #f6e3c0;color:#8a5a06}
   .auth-extra{display:flex;justify-content:flex-end;font-size:12px;margin:-2px 0 2px}
   .auth-extra button{border:0;background:transparent;color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;padding:2px 0}
   .auth-extra button:hover{color:var(--brand)}
@@ -399,6 +400,59 @@
   </div>
 </div>
 
+<!-- ==================== 忘记密码弹窗（发送重置邮件） ==================== -->
+<div class="auth-mask" id="mask-forgot">
+  <div class="auth-dlg" role="dialog" aria-modal="true" aria-labelledby="forgot-title">
+    <button class="cls" type="button" data-auth-close aria-label="关闭">×</button>
+    <h2 id="forgot-title">重置密码</h2>
+    <p class="sub">填写注册时使用的邮箱，我们会发送一封含重置链接的邮件给你。</p>
+
+    <div class="msg" id="forgot-msg"></div>
+
+    <form id="form-forgot" novalidate>
+      <div class="fld">
+        <label for="fg-email">注册邮箱</label>
+        <input type="email" id="fg-email" placeholder="you@example.com" autocomplete="username" />
+        <div class="err" id="fg-email-err"></div>
+      </div>
+      <div class="go">
+        <button class="btn btn-primary btn-lg" type="submit" id="forgot-submit">发送重置邮件</button>
+      </div>
+    </form>
+
+    <div class="auth-switch">想起来了？<button type="button" data-auth-open="login">返回登录</button></div>
+    <div class="auth-tip">为保护账号安全，无论邮箱是否已注册，提示信息都一样。</div>
+  </div>
+</div>
+
+<!-- ==================== 设置新密码弹窗（从邮件链接跳回时出现） ==================== -->
+<div class="auth-mask" id="mask-reset">
+  <div class="auth-dlg" role="dialog" aria-modal="true" aria-labelledby="reset-title">
+    <h2 id="reset-title">设置新密码</h2>
+    <p class="sub">重置链接已验证通过，请设置新的登录密码。设置后原密码立即失效。</p>
+
+    <div class="msg" id="reset-msg"></div>
+
+    <form id="form-reset" novalidate>
+      <div class="fld">
+        <label for="rs-pwd">新密码</label>
+        <input type="password" id="rs-pwd" placeholder="至少 6 位" autocomplete="new-password" />
+        <div class="err" id="rs-pwd-err"></div>
+      </div>
+      <div class="fld">
+        <label for="rs-pwd2">确认新密码</label>
+        <input type="password" id="rs-pwd2" placeholder="请再次输入新密码" autocomplete="new-password" />
+        <div class="err" id="rs-pwd2-err"></div>
+      </div>
+      <div class="go">
+        <button class="btn btn-primary btn-lg" type="submit" id="reset-submit">保存新密码</button>
+      </div>
+    </form>
+
+    <div class="auth-switch">暂不修改？<button type="button" id="reset-cancel">退出登录状态</button></div>
+  </div>
+</div>
+
 <script>
 /* =========================================================
    七号电竞 · 客户端
@@ -500,10 +554,38 @@ async function signOut() {
 }
 
 /* =========================================================
-   登录 / 注册：两个各自独立的弹窗入口
+   登录 / 注册 / 重置密码：各自独立的弹窗入口
    ========================================================= */
-const AUTH_MASK = { login:'mask-login', signup:'mask-signup' };
+const AUTH_MASK = {
+  login:  { mask:'mask-login',  submit:'login-submit'  },
+  signup: { mask:'mask-signup', submit:'signup-submit' },
+  forgot: { mask:'mask-forgot', submit:'forgot-submit' },
+  reset:  { mask:'mask-reset',  submit:'reset-submit'  }  /* 从重置邮件跳回时出现，不提供随手关闭 */
+};
+const AUTH_KEYS = Object.keys(AUTH_MASK);
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/* 邮件里的重置链接必须跳回一个真实可访问的 http(s) 地址。
+   站点已部署在 SITE_URL；若留空则退回使用当前页面地址。 */
+const SITE_URL = 'https://qhqiqi.cn/Delta-Force/';
+const CAN_USE_EMAIL_LINK = /^https?:$/.test(location.protocol);
+const authRedirectTo = () => SITE_URL || (location.origin + location.pathname);
+
+/* 提醒：邮件链接会落到哪个地址（本地预览 / 换域名时容易踩坑） */
+function showRedirectNotice(){
+  const target = authRedirectTo();
+  const here = CAN_USE_EMAIL_LINK ? (location.origin + location.pathname) : '';
+  if (!CAN_USE_EMAIL_LINK && !SITE_URL){
+    dialogMsg('forgot-msg',
+      '当前页面是用本地文件（file://）直接打开的，邮件里的链接没法跳回本页。请先把页面部署到 https 域名，并在 Supabase 后台把域名加进 Redirect URLs。',
+      'warn');
+  } else if (here !== target){
+    dialogMsg('forgot-msg', '注意：邮件里的重置链接会跳转到 ' + target + '，不是当前这个地址。', 'warn');
+  }
+}
+
+/* true 表示正在走「邮件链接 -> 设置新密码」，此时弹窗必须显式处理，不能被 Esc/遮罩关掉 */
+let resetMode = false;
 
 function fieldErr(inputId, errId, msg){
   const input = document.getElementById(inputId);
@@ -528,7 +610,8 @@ function setBusy(btnId, busy, label){
 }
 
 function clearAuthForm(which){
-  const mask = document.getElementById(AUTH_MASK[which]);
+  const conf = AUTH_MASK[which];
+  const mask = conf && document.getElementById(conf.mask);
   if (!mask) return;
   const form = mask.querySelector('form');
   if (form) form.reset();
@@ -536,32 +619,51 @@ function clearAuthForm(which){
   mask.querySelectorAll('.err').forEach(e => { e.textContent = ''; e.classList.remove('show'); });
   const msg = mask.querySelector('.msg');
   if (msg){ msg.textContent = ''; msg.className = 'msg'; }
-  setBusy(which === 'login' ? 'login-submit' : 'signup-submit', false);
+  setBusy(conf.submit, false);
 }
 
-/* 打开指定弹窗（两个弹窗互斥，同一时刻只显示一个） */
+/* 打开指定弹窗（各弹窗互斥，同一时刻只显示一个） */
 function openAuthModal(which){
-  Object.keys(AUTH_MASK).forEach(k => {
-    const el = document.getElementById(AUTH_MASK[k]);
+  const conf = AUTH_MASK[which];
+  if (!conf) return;
+  AUTH_KEYS.forEach(k => {
+    if (k === which) return;
+    const el = document.getElementById(AUTH_MASK[k].mask);
     if (el) el.classList.remove('show');
-    if (k !== which) clearAuthForm(k);
+    clearAuthForm(k);
   });
-  const el = document.getElementById(AUTH_MASK[which]);
+  const el = document.getElementById(conf.mask);
   if (!el) return;
   clearAuthForm(which);
   el.classList.add('show');
   document.body.style.overflow = 'hidden';
+  if (which === 'forgot') showRedirectNotice();
   const first = el.querySelector('input');
   if (first) setTimeout(() => first.focus(), 60);
 }
 
 function closeAuthModals(){
-  Object.values(AUTH_MASK).forEach(id => {
-    const el = document.getElementById(id);
+  if (resetMode) return;  /* 设置新密码必须走完或显式取消 */
+  AUTH_KEYS.forEach(k => {
+    const el = document.getElementById(AUTH_MASK[k].mask);
     if (el) el.classList.remove('show');
   });
-  Object.keys(AUTH_MASK).forEach(clearAuthForm);
+  AUTH_KEYS.forEach(clearAuthForm);
   document.body.style.overflow = '';
+}
+
+/* 密码重置：发送带链接的邮件 */
+async function sendResetEmail(email){
+  if (!supabaseClient) throw new Error('认证服务未加载，请刷新页面重试');
+  const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo: authRedirectTo() });
+  if (error) throw new Error(error.message);
+}
+
+/* 密码重置：用邮件链接换来的会话写入新密码 */
+async function applyNewPassword(password){
+  if (!supabaseClient) throw new Error('认证服务未加载，请刷新页面重试');
+  const { error } = await supabaseClient.auth.updateUser({ password });
+  if (error) throw new Error(error.message);
 }
 
 /* 登录弹窗提交 */
@@ -624,11 +726,67 @@ document.getElementById('form-signup').addEventListener('submit', async e => {
   }
 });
 
+/* 忘记密码弹窗提交：发送重置邮件 */
+document.getElementById('form-forgot').addEventListener('submit', async e => {
+  e.preventDefault();
+  const email = document.getElementById('fg-email').value.trim();
+  if (!EMAIL_RE.test(email)){
+    fieldErr('fg-email','fg-email-err','请输入有效的邮箱地址');
+    return;
+  }
+  fieldErr('fg-email','fg-email-err','');
+
+  dialogMsg('forgot-msg','');
+  setBusy('forgot-submit', true, '发送中…');
+  try {
+    await sendResetEmail(email);
+    dialogMsg('forgot-msg',
+      '如果 ' + email + ' 已注册，重置邮件已发出。请打开邮件里的链接（有效期 1 小时）设置新密码；没收到就看看垃圾邮件。',
+      'ok');
+  } catch (err) {
+    dialogMsg('forgot-msg', err.message || '发送失败，请稍后重试');
+  } finally {
+    setBusy('forgot-submit', false);
+  }
+});
+
+/* 设置新密码弹窗提交 */
+document.getElementById('form-reset').addEventListener('submit', async e => {
+  e.preventDefault();
+  const pwd = document.getElementById('rs-pwd').value;
+  const pwd2 = document.getElementById('rs-pwd2').value;
+  let ok = true;
+  if (pwd.length < 6){ fieldErr('rs-pwd','rs-pwd-err','密码至少 6 位'); ok = false; }
+  else fieldErr('rs-pwd','rs-pwd-err','');
+  if (pwd2 !== pwd){ fieldErr('rs-pwd2','rs-pwd2-err', pwd2 ? '两次输入的密码不一致' : '请再次输入新密码'); ok = false; }
+  else fieldErr('rs-pwd2','rs-pwd2-err','');
+  if (!ok) return;
+
+  dialogMsg('reset-msg','');
+  setBusy('reset-submit', true, '保存中…');
+  try {
+    await applyNewPassword(pwd);
+    resetMode = false;
+    dialogMsg('reset-msg','密码已更新，正在进入…','ok');
+    toast('密码已更新', true);
+    setTimeout(() => { closeAuthModals(); location.reload(); }, 800);
+  } catch (err) {
+    dialogMsg('reset-msg', err.message || '保存失败，请稍后重试');
+    setBusy('reset-submit', false);
+  }
+});
+
+/* 放弃改密：退出这个临时登录态 */
+document.getElementById('reset-cancel').addEventListener('click', async () => {
+  resetMode = false;
+  await signOut();
+});
+
 /* 导航栏两个独立入口 */
 document.getElementById('btn-login').addEventListener('click', () => openAuthModal('login'));
 document.getElementById('btn-signup').addEventListener('click', () => openAuthModal('signup'));
 
-/* 弹窗内部：关闭 / 登录<->注册 互跳 / 忘记密码 */
+/* 弹窗内部：关闭 / 各弹窗互跳 / 忘记密码 */
 document.addEventListener('click', e => {
   if (e.target.closest('[data-auth-close]')){ closeAuthModals(); return; }
 
@@ -637,7 +795,7 @@ document.addEventListener('click', e => {
 
   const act = e.target.closest('[data-auth-act]');
   if (act && act.dataset.authAct === 'forgot'){
-    toast('演示占位：密码重置邮件需接入正式邮件服务，当前未开通');
+    openAuthModal('forgot');
     return;
   }
 
@@ -649,7 +807,9 @@ document.addEventListener('click', e => {
 document.addEventListener('input', e => {
   const map = {
     'lg-email':['lg-email','lg-email-err'], 'lg-pwd':['lg-pwd','lg-pwd-err'],
-    'sg-email':['sg-email','sg-email-err'], 'sg-pwd':['sg-pwd','sg-pwd-err'], 'sg-pwd2':['sg-pwd2','sg-pwd2-err']
+    'sg-email':['sg-email','sg-email-err'], 'sg-pwd':['sg-pwd','sg-pwd-err'], 'sg-pwd2':['sg-pwd2','sg-pwd2-err'],
+    'fg-email':['fg-email','fg-email-err'],
+    'rs-pwd':['rs-pwd','rs-pwd-err'], 'rs-pwd2':['rs-pwd2','rs-pwd2-err']
   };
   const m = map[e.target.id];
   if (m) fieldErr(m[0], m[1], '');
@@ -666,6 +826,17 @@ document.getElementById('btn-logout').addEventListener('click', () => {
 if (supabaseClient) {
   supabaseClient.auth.onAuthStateChange((event, session) => {
     const user = session?.user;
+
+    /* 用户点开邮件里的重置链接后，Supabase 会建立一个临时会话并抛出该事件 */
+    if (event === 'PASSWORD_RECOVERY'){
+      resetMode = true;
+      openAuthModal('reset');
+      toast('重置链接已验证，请设置新密码');
+      return;
+    }
+    /* 改密成功由提交逻辑收尾，这里不抢着改界面 */
+    if (event === 'USER_UPDATED' && resetMode) return;
+
     if (user) {
       document.getElementById('auth-box').style.display = 'none';
       document.getElementById('user-box').style.display = 'flex';
@@ -675,6 +846,38 @@ if (supabaseClient) {
       document.getElementById('user-box').style.display = 'none';
     }
   });
+
+  /* 重置/验证链接过期或无效时，Supabase 把原因写在 URL hash 里，这里接手提示 */
+  (function reportAuthLinkError(){
+    const hash = location.hash.replace(/^#/, '');
+    if (!hash || hash.indexOf('error') === -1) return;
+    let p;
+    try { p = new URLSearchParams(hash); } catch (err) { return; }
+    const code = p.get('error_code') || p.get('error');
+    if (!code) return;
+    const known = {
+      otp_expired: '重置链接已过期或已被使用，请重新发送一封重置邮件。',
+      access_denied: '重置链接无效或已过期，请重新发送一封重置邮件。'
+    };
+    const desc = decodeURIComponent((p.get('error_description') || '').replace(/\+/g, ' ')).trim();
+    const text = known[code] || desc || '重置链接校验失败，请重新发送一封重置邮件。';
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (err) { /* file:// 下可能不允许改写 URL，忽略 */ }
+    setTimeout(() => {
+      openAuthModal('forgot');
+      dialogMsg('forgot-msg', text, 'err');
+    }, 400);
+  })();
+
+  /* 兜底：若 session 建立早于这里的监听注册，PASSWORD_RECOVERY 事件可能已经错过，直接读 URL 判断 */
+  (function detectRecoveryInUrl(){
+    const raw = location.hash.replace(/^#/, '') || location.search.replace(/^\?/, '');
+    if (!raw || raw.indexOf('error') !== -1) return;
+    let p;
+    try { p = new URLSearchParams(raw); } catch (err) { return; }
+    if (p.get('type') !== 'recovery') return;
+    resetMode = true;
+    openAuthModal('reset');
+  })();
 } else {
   console.warn('认证服务不可用，登录功能已禁用');
   // 可以选择隐藏登录区域
