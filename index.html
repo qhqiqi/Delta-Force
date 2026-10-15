@@ -137,6 +137,9 @@
   .svc{border:1px solid var(--line);border-radius:15px;padding:17px;background:#fff;cursor:pointer;transition:border-color .18s ease,transform .18s ease,box-shadow .18s ease;position:relative}
   .svc:hover{border-color:var(--brand-line);transform:translateY(-2px);box-shadow:0 12px 26px rgba(79,70,229,.1)}
   .svc.on{border-color:var(--brand);box-shadow:0 0 0 3px rgba(79,70,229,.12)}
+  /* 非可点击的服务卡（首页展示用） */
+  .svc.plain{cursor:default}
+  .svc.plain:hover{border-color:var(--line);transform:none;box-shadow:none}
   .svc .top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
   .svc .nm{font-size:15px;font-weight:750}
   .svc .pr{font-size:19px;font-weight:750;color:var(--brand);letter-spacing:-.4px;font-variant-numeric:tabular-nums}
@@ -215,10 +218,6 @@
   .notice .track{flex:1;min-width:0;overflow:hidden;white-space:nowrap}
   .notice .track span{display:inline-block;padding-left:100%;animation:marquee 22s linear infinite;font-size:12.5px;color:#4a5263}
   @keyframes marquee{to{transform:translateX(-100%)}}
-  .effect-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
-  .effect-row .lb{font-size:12px;color:var(--muted)}
-  .fx{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 13px;font-size:12px;color:#3c4453;cursor:pointer}
-  .fx.on{background:var(--purple-soft);border-color:#e2d4ff;color:var(--purple);font-weight:700}
 
   .coupon{position:relative;display:flex;border:1px solid var(--brand-line);background:linear-gradient(135deg,#f6f5ff,#fdf3ff);border-radius:12px;overflow:hidden}
   .coupon .amt{flex:0 0 96px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--brand);font-weight:750;border-right:1px dashed var(--brand-line)}
@@ -550,13 +549,6 @@
    七号电竞 · 客户端
    ========================================================= */
 
-const LVRANK = {'普通':1,'魔王':2,'明星':3};
-const LEVEL_CLS = {'普通':'b-gray','魔王':'b-purple','明星':'b-gold'};
-const RATE = l => LVRANK[l]===1 ? 25 : 20;
-const SLOTS = ['12—14','16—18','18—20','20—22','22—24'];
-const DAYS = ['10-14 周三','10-15 周四','10-16 周五','10-17 周六','10-18 周日','10-19 周一','10-20 周二'];
-const MAPS = ['任意','零号大坝','长弓溪谷','潮汐监狱'];
-
 /* 产品矩阵与定价：对齐策划案 5.3 */
 const SERVICES = [
   {id:'P1', name:'娱乐陪玩', price:25,  unit:'局',  risk:'低',   desc:'聊天、陪跑图、普通组队，适合新手与休闲玩家'},
@@ -568,29 +560,14 @@ const SERVICES = [
 
 const state = {
   page:'home',
-  day:0,
-  seq:13,
-  booking:{svc:'P3', slot:'20—22', req:'魔王+', map:'零号大坝', age:false, risk:false},
-  staff:[
-    {id:'D01',name:'夜猫',level:'明星',maps:['零号大坝','长弓溪谷'],bad:0.4,rating:4.9,orders:214,status:'在线'},
-    {id:'D02',name:'十七',level:'明星',maps:['潮汐监狱'],bad:0.8,rating:4.8,orders:187,status:'在线'},
-    {id:'D03',name:'雷克',level:'魔王',maps:['零号大坝'],bad:1.6,rating:4.6,orders:132,status:'在线'},
-    {id:'D04',name:'阿枫',level:'魔王',maps:['长弓溪谷','任意'],bad:1.1,rating:4.7,orders:98,status:'在线'},
-    {id:'D05',name:'小北',level:'魔王',maps:['零号大坝'],bad:1.9,rating:4.5,orders:76,status:'排班中'},
-    {id:'D06',name:'阿泰',level:'普通',maps:['任意'],bad:2.4,rating:4.3,orders:41,status:'在线'},
-    {id:'D07',name:'老王',level:'普通',maps:['任意'],bad:3.1,rating:4.1,orders:33,status:'在线'},
-    {id:'D08',name:'木木',level:'普通',maps:['潮汐监狱'],bad:0.0,rating:4.4,orders:9, status:'离线'}
-  ],
   myOrders:[
     {id:'QH-1014-11',svc:'P3',slot:'21:00—23:00',amount:200,status:'待付款',date:'10-14',map:'零号大坝',guarantee:'3 局保 2 次撤离'},
     {id:'QH-1014-05',svc:'P3',slot:'18:00—20:00',amount:200,status:'已接单',staff:'D01',voucher:true,date:'10-14',map:'零号大坝',guarantee:'3 局保 2 次撤离'},
     {id:'QH-1014-02',svc:'P2',slot:'20:00—22:00',amount:120,status:'待接单',date:'10-14',map:'长弓溪谷'},
     {id:'QH-1013-08',svc:'P5',slot:'包周 · 每晚 20:00',amount:688,status:'已完成',staff:'D02',voucher:true,date:'10-13',map:'任意'}
   ],
-  sched:{},
-  /* —— V2 新增：店铺装修 / 会员营销 —— */
+  /* —— 店铺装修 —— */
   banner:0,
-  fx:{bg:true, music:false, snow:true},
   coupons:[
     {id:'C1', amount:15, min:60,  title:'新客通用券',   desc:'满 ¥60 可用 · 有效期至 10-31', used:false},
     {id:'C2', amount:30, min:150, title:'护航专享券',   desc:'满 ¥150 可用 · 仅限护航类订单', used:false},
@@ -599,25 +576,12 @@ const state = {
   ],
   wallet:88.00,
   memberLevel:'白银会员',
-  invite:{code:'QH7-8823', invited:3, reward:36},
-  tips:[
-    {id:'T1', to:'D01 夜猫', amount:10, time:'10-13 22:40'},
-    {id:'T2', to:'D02 十七', amount:20, time:'10-12 21:05'}
-  ],
-  ranksD:{
-    staff:[['夜猫','D01','明星',214],['十七','D02','明星',187],['雷克','D03','魔王',132],['阿枫','D04','魔王',98],['小北','D05','魔王',76]],
-    good:[['夜猫','D01','明星',98],['十七','D02','明星',96],['阿枫','D04','魔王',95],['雷克','D03','魔王',93],['小北','D05','魔王',90]],
-    tip:[['夜猫','D01','明星',458],['十七','D02','明星',392],['雷克','D03','魔王',266],['阿枫','D04','魔王',188],['阿泰','D06','普通',96]]
-  }
+  invite:{code:'QH7-8823', invited:3, reward:36}
 };
 
 const $ = s => document.querySelector(s);
-const staffById = id => state.staff.find(s=>s.id===id);
-const svcById = id => SERVICES.find(s=>s.id===id);
 const money = n => '¥' + (Math.round(n*100)/100).toLocaleString('zh-CN');
 const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const statusCls = st => ({'待付款':'b-gray','待接单':'b-amber','已接单':'b-blue','已完成':'b-green'}[st]||'b-gray');
-const orderById = id => state.myOrders.find(o=>o.id===id);
 
 /* 当前登录用户（Supabase user 对象），未登录为 null */
 let currentUser = null;
@@ -1080,49 +1044,6 @@ if (supabaseClient) {
   const authBox = document.getElementById('auth-box');
   if (authBox) authBox.style.display = 'none';
 }
-function initSched(){
-  state.sched = {};
-  DAYS.forEach((d,di)=>{
-    const map = {};
-    state.staff.forEach((s,si)=>{
-      map[s.id] = SLOTS.map((_,slotIdx)=>{
-        if(slotIdx>=4) return (si+di)%3!==0;
-        if(slotIdx===3) return (si+di)%5!==4;
-        if(slotIdx===2) return (si+di)%4!==3;
-        return (si+di)%2===0;
-      });
-    });
-    state.sched[d] = map;
-  });
-}
-function daySlotToIdx(slot){
-  if(!slot) return 3;
-  if(slot.indexOf('12')===0) return 0;
-  if(slot.indexOf('16')===0) return 1;
-  if(slot.indexOf('18')===0) return 2;
-  if(slot.indexOf('20')===0) return 3;
-  return 4;
-}
-/* 匹配预览：与派单引擎同规则（时段 ∩ 排班 ∩ 等级 ∩ 擅长地图） */
-function matchCandidates(order){
-  const day = DAYS[state.day];
-  const si = daySlotToIdx(order.slot);
-  const need = order.req==='不限' ? 0 : LVRANK[(order.req||'').replace('+','')] || 0;
-  const res = [];
-  state.staff.forEach(s=>{
-    if(s.status==='离线') return;
-    const row = state.sched[day] && state.sched[day][s.id];
-    if(!row || !row[si]) return;
-    let score = 100; const why = [];
-    if(need && LVRANK[s.level] < need){ score -= 26; why.push('等级差 1 档'); } else why.push('等级达标');
-    const mapOk = s.maps.indexOf('任意')>=0 || s.maps.indexOf(order.map)>=0 || order.map==='任意';
-    if(!mapOk){ score -= 12; why.push('非擅长地图'); } else why.push('地图匹配');
-    score -= Math.round(s.bad*3); if(s.bad>2) why.push('差评率偏高');
-    res.push({s, score:Math.max(38,Math.min(99,score)), why});
-  });
-  return res.sort((a,b)=>b.score-a.score).slice(0,3);
-}
-
 /* ========================= 页面 ========================= */
 function pageHome(){
   return `
@@ -1133,7 +1054,7 @@ function pageHome(){
       <h1>不用等野队，也不用踩坑<br>找个靠谱的人陪你打《三角洲行动》</h1>
       <p>娱乐陪玩、技术陪玩、护航（保底版）、战术教学、包周套餐——在平台自助选服务、选时段，系统按打手排班与等级自动匹配。先付款、后服务，凭证留痕、有客服、有售后。</p>
       <div class="acts">
-        <button class="btn" data-nav="book">立即预约下单</button>
+        <button class="btn" data-scroll="svc-title">查看服务与价格</button>
         <button class="btn ghost" data-nav="safety">查看服务与安全规则</button>
       </div>
     </div>
@@ -1149,10 +1070,10 @@ function pageHome(){
     <strong>本平台为唯一下单入口。</strong>请勿通过微信私聊、社群等站外渠道下单或转账；站外交易不进入订单台账，无法提供服务凭证、保底兑现与售后保障。
   </div>
 
-  <div class="sec-title">服务与价格</div>
+  <div class="sec-title" id="svc-title">服务与价格</div>
   <div class="grid g3">
     ${SERVICES.map(s=>`
-      <div class="svc" data-nav="book" data-bsvc="${s.id}">
+      <div class="svc plain">
         <div class="top">
           <div>
             <div class="nm">${esc(s.name)}</div>
@@ -1200,136 +1121,6 @@ function pageHome(){
   </div>`;
 }
 
-function pageBook(){
-  const b = state.booking;
-  const svc = svcById(b.svc);
-  const cands = matchCandidates({slot:b.slot, req:b.req, map:b.map});
-  return `
-  <div class="callout co-info" style="margin-bottom:16px">
-    平台为唯一下单入口：所有订单必须在本页面提交并在平台内支付。客服不会通过私聊为您代下单，也不会要求您向个人账户转账。
-  </div>
-
-  <div class="grid g-side">
-    <div class="card">
-      <div class="card-h"><h3>预约下单</h3><span class="hint">选时段 · 系统按打手排班匹配</span></div>
-
-      <div class="form-row">
-        <label class="tt">1 · 选择服务</label>
-        <div class="chips">
-          ${SERVICES.map(s=>`<button class="chip ${b.svc===s.id?'active':''}" data-bsvc="${s.id}">${esc(s.name)}<span class="p">${money(s.price)}/${esc(s.unit)}</span></button>`).join('')}
-        </div>
-        <div style="font-size:11.5px;color:var(--muted);margin-top:8px">${esc(svc.desc)}　风险等级：${esc(svc.risk)}</div>
-      </div>
-
-      <div class="form-row">
-        <label class="tt">2 · 期望时段</label>
-        <div class="chips">
-          ${SLOTS.map(sl=>`<button class="chip ${b.slot===sl?'active':''}" data-bslot="${sl}">${sl} 点</button>`).join('')}
-        </div>
-      </div>
-
-      <div class="form-row">
-        <label class="tt">3 · 打手等级偏好</label>
-        <div class="chips">
-          ${['不限','普通+','魔王+','明星'].map(r=>`<button class="chip ${b.req===r?'active':''}" data-breq="${r}">${r}</button>`).join('')}
-        </div>
-      </div>
-
-      <div class="form-row">
-        <label class="tt">4 · 地图偏好</label>
-        <div class="chips">
-          ${MAPS.map(m=>`<button class="chip ${b.map===m?'active':''}" data-bmap="${m}">${m}</button>`).join('')}
-        </div>
-      </div>
-
-      <div class="form-row">
-        <label class="tt">5 · 下单前确认（两项必选）</label>
-        <label class="chk"><input type="checkbox" id="ckAge" ${b.age?'checked':''}>我确认已年满 18 周岁。平台不向未成年人提供服务，如信息不实需自行承担后果。</label>
-        <label class="chk"><input type="checkbox" id="ckRisk" ${b.risk?'checked':''}>我已阅读《风险告知书》：服务中由我本人操作账号；游戏官方对此类付费服务存在风控规则，相关风险由我知悉并自担。</label>
-      </div>
-
-      <div class="acts">
-        <button class="btn btn-primary btn-lg" data-book="1">提交预约 · ${money(svc.price)}</button>
-        <button class="btn btn-lg" data-bookreset="1">重置</button>
-      </div>
-      ${svc.id==='P3'?`<div class="callout co-warn" style="margin-top:14px">护航单保底条款：未达成约定目标时<strong>免费补单 / 补时或按比例退款</strong>。本平台不对游戏内具体结果（如物资产出）作承诺。</div>`:''}
-    </div>
-
-    <div>
-      <div class="card" style="margin-bottom:14px">
-        <div class="card-h"><h3>这个时段，谁有空？</h3><span class="hint">实时匹配预览</span></div>
-        ${cands.map(c=>`
-          <div class="mrow">
-            <span class="badge ${LEVEL_CLS[c.s.level]}">${c.s.level}</span>
-            <b>${esc(c.s.name)}</b>
-            <span class="why">${c.why.join(' · ')}</span>
-            <span class="score">${c.score}</span>
-          </div>`).join('') || '<div class="empty">该时段暂无打手排班，可换个时段或提交需求等待排班补位</div>'}
-        <div class="callout co-info" style="margin-top:13px">下单后系统把需求推给匹配打手，<strong>15 分钟未接自动转派下一位</strong>；非客服在线时段也能自助下单。</div>
-      </div>
-
-      <div class="card">
-        <div class="card-h"><h3>费用明细</h3></div>
-        <div class="kv"><span>服务</span><span>${esc(svc.name)}</span></div>
-        <div class="kv"><span>计价方式</span><span>${money(svc.price)} / ${esc(svc.unit)}</span></div>
-        <div class="kv"><span>期望时段</span><span>${esc(b.slot)} 点</span></div>
-        <div class="kv"><span>等级偏好</span><span>${esc(b.req)}</span></div>
-        <div class="kv"><span>地图偏好</span><span>${esc(b.map)}</span></div>
-        <div class="kv"><span>平台服务费</span><span>¥0（不额外收取）</span></div>
-        <div class="kv total"><span>需支付</span><span>${money(svc.price)}</span></div>
-        <div class="callout co-ok" style="margin-top:12px">多退少补规则：若实际服务时长少于所选时段，按实际时长结算差额原路退回。</div>
-      </div>
-    </div>
-  </div>`;
-}
-
-function pageMy(){
-  const list = state.myOrders;
-  const sum = list.filter(o=>o.status!=='待付款').reduce((a,b)=>a+b.amount,0);
-  return `
-  <div class="grid g4" style="margin-bottom:16px">
-    <div class="card" style="padding:15px 16px"><div style="font-size:12px;color:var(--muted)">我的订单</div><div style="font-size:25px;font-weight:750;letter-spacing:-.6px;margin:5px 0 1px">${list.length}</div><div style="font-size:11.5px;color:var(--muted-2)">全部来自平台自助下单</div></div>
-    <div class="card" style="padding:15px 16px"><div style="font-size:12px;color:var(--muted)">已支付</div><div style="font-size:25px;font-weight:750;letter-spacing:-.6px;margin:5px 0 1px">${money(sum)}</div><div style="font-size:11.5px;color:var(--muted-2)">不含待付款订单</div></div>
-    <div class="card" style="padding:15px 16px"><div style="font-size:12px;color:var(--muted)">进行中</div><div style="font-size:25px;font-weight:750;letter-spacing:-.6px;margin:5px 0 1px">${list.filter(o=>o.status==='待接单'||o.status==='已接单').length}</div><div style="font-size:11.5px;color:var(--muted-2)">匹配中 / 服务中</div></div>
-    <div class="card" style="padding:15px 16px"><div style="font-size:12px;color:var(--muted)">已完成</div><div style="font-size:25px;font-weight:750;letter-spacing:-.6px;margin:5px 0 1px">${list.filter(o=>o.status==='已完成').length}</div><div style="font-size:11.5px;color:var(--muted-2)">可申请售后 7 天</div></div>
-  </div>
-
-  <div class="card" style="padding:14px 6px 6px">
-    <div class="card-h" style="padding:0 11px"><h3>我的订单</h3><span class="hint">四阶段状态实时可见</span></div>
-    <div class="tbl-wrap">
-      <table class="tbl">
-        <thead><tr><th>订单号</th><th>下单日期</th><th>服务</th><th>时段</th><th>地图</th><th>金额</th><th>打手</th><th>状态</th><th>操作</th></tr></thead>
-        <tbody>
-          ${list.map(o=>`
-            <tr>
-              <td class="num">${o.id}</td>
-              <td style="font-size:12px;color:var(--muted)">${o.date}</td>
-              <td>${esc(svcById(o.svc).name)}</td>
-              <td>${esc(o.slot)}</td>
-              <td>${esc(o.map||'—')}</td>
-              <td class="num">${money(o.amount)}</td>
-              <td>${o.staff?esc(staffById(o.staff).name):'<span style="color:var(--muted-2)">匹配中</span>'}</td>
-              <td><span class="badge ${statusCls(o.status)}">${o.status}</span></td>
-              <td>
-                <div class="acts">
-                  ${o.status==='待付款'?`<button class="btn btn-sm btn-primary" data-pay="${o.id}">去支付</button>`:''}
-                  ${o.status==='已接单'&&o.voucher?`<button class="btn btn-sm btn-primary" data-confirm="${o.id}">确认结单</button>`:''}
-                  ${o.status==='已接单'&&!o.voucher?`<span style="font-size:12px;color:var(--muted-2)">等待打手上传凭证</span>`:''}
-                  ${o.status==='已完成'?`<button class="btn btn-sm" data-after="${o.id}">申请售后</button>`:''}
-                  ${o.status==='待接单'?`<button class="btn btn-sm" data-urge="${o.id}">催一下</button>`:''}
-                </div>
-              </td>
-            </tr>`).join('') || '<tr><td colspan="9"><div class="empty">还没有订单，去「预约下单」试一单</div></td></tr>'}
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="callout co-info" style="margin-top:16px">
-    结单规则：服务完成后由您确认结单。若 24 小时内未操作，系统按自动确认处理。对服务有异议，可在结单后 7 天内提交售后，客服 24 小时内首次响应。
-  </div>`;
-}
-
 function pageSafety(){
   return `
   <div class="sec-title">服务说明与安全规则</div>
@@ -1371,10 +1162,10 @@ function pageSafety(){
   </div>`;
 }
 
-/* ================== V2 新增：店铺装修 / 会员 / 排行榜 ================== */
+/* ================== 店铺装修：轮播 / 公告 ================== */
 const BANNERS = [
   {b:'新赛季护航保底上线',   p:'3 局保 2 次撤离，未达标免费补单 / 补时或按比例退款'},
-  {b:'首次下单立减 15 元',   p:'新客通用券已放入「会员中心」，满 ¥60 可用'},
+  {b:'首次下单立减 15 元',   p:'新客通用券满 ¥60 可用，联系客服领取'},
   {b:'邀请好友，双方得返利', p:'生成专属海报，好友下单你可得 5% 返利，上不封顶'}
 ];
 function decorHtml(){
@@ -1387,82 +1178,7 @@ function decorHtml(){
     <span class="tag">店铺公告</span>
     <div class="track"><span>10-14 起试行「先付款后服务」，服务未开始可全额退款。｜ 平台为唯一下单入口，站外交易不受保障。｜ 新赛季排班高峰，建议提前 1 天预约。｜ 邀请好友下单，双方各得返利。</span></div>
   </div>
-  <div class="effect-row">
-    <span class="lb">店铺特效</span>
-    <span class="fx ${state.fx.bg?'on':''}" data-fx="bg">背景主题</span>
-    <span class="fx ${state.fx.music?'on':''}" data-fx="music">背景音乐</span>
-    <span class="fx ${state.fx.snow?'on':''}" data-fx="snow">飘落特效</span>
-  </div>`;
-}
-
-function pageMember(){
-  const c = state.coupons;
-  const avail = c.filter(x=>!x.used).length;
-  return `
-  <div class="grid g4" style="margin-bottom:16px">
-    <div class="card" style="padding:15px 16px"><div style="font-size:12px;color:var(--muted)">会员等级</div><div style="font-size:20px;font-weight:750;letter-spacing:-.5px;margin:5px 0 1px">${esc(state.memberLevel)}</div><div style="font-size:11.5px;color:var(--muted-2)">累计消费满 ¥1000 升黄金</div></div>
-    <div class="card" style="padding:15px 16px"><div style="font-size:12px;color:var(--muted)">账户余额</div><div style="font-size:20px;font-weight:750;letter-spacing:-.5px;margin:5px 0 1px">${money(state.wallet)}</div><div style="font-size:11.5px;color:var(--muted-2)">充值满 ¥200 赠 5%</div></div>
-    <div class="card" style="padding:15px 16px"><div style="font-size:12px;color:var(--muted)">可用优惠券</div><div style="font-size:20px;font-weight:750;letter-spacing:-.5px;margin:5px 0 1px">${avail} 张</div><div style="font-size:11.5px;color:var(--muted-2)">共 ${c.length} 张</div></div>
-    <div class="card" style="padding:15px 16px"><div style="font-size:12px;color:var(--muted)">邀请返利</div><div style="font-size:20px;font-weight:750;letter-spacing:-.5px;margin:5px 0 1px">${money(state.invite.reward)}</div><div style="font-size:11.5px;color:var(--muted-2)">已邀请 ${state.invite.invited} 人</div></div>
-  </div>
-
-  <div class="grid g-side">
-    <div>
-      <div class="card">
-        <div class="card-h"><h3>我的优惠券</h3><span class="hint">下单时自动匹配可用券</span></div>
-        <div style="display:flex;flex-direction:column;gap:10px">
-          ${c.map(x=>`
-            <div class="coupon ${x.used?'used':''}">
-              <div class="amt"><b>${money(x.amount)}</b><span>满 ${money(x.min)}</span></div>
-              <div class="info"><div class="t">${esc(x.title)}</div><div class="d">${esc(x.desc)}</div></div>
-              <div class="get">${x.used?'<span class="badge b-gray">已使用</span>':`<button class="btn btn-sm btn-primary" data-usecoupon="${x.id}">去使用</button>`}</div>
-            </div>`).join('')}
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-h"><h3>余额充值</h3><span class="hint">充值后下单可直接抵扣</span></div>
-        <div class="chips">
-          ${[50,100,200,500].map(v=>`<button class="chip" data-recharge="${v}">充 ¥${v}${v>=200?' 赠 '+Math.round(v*0.05):''}</button>`).join('')}
-        </div>
-        <div class="kv" style="margin-top:12px"><span>当前余额</span><span>${money(state.wallet)}</span></div>
-        <div class="callout co-warn" style="margin-top:12px">余额充值需接入微信支付商户号，需先完成<strong>个体工商户注册</strong>后才能正式开通；当前为演示占位，不会真实扣款。</div>
-      </div>
-
-      <div class="card">
-        <div class="card-h"><h3>我的打赏记录</h3><span class="hint">打赏全额给到打手</span></div>
-        ${state.tips.map(t=>`<div class="kv"><span>${esc(t.to)}<span style="color:var(--muted-2);font-size:11px">　${esc(t.time)}</span></span><span>${money(t.amount)}</span></div>`).join('') || '<div class="empty">暂无打赏记录</div>'}
-        <div class="callout co-info" style="margin-top:12px">打赏为自愿行为，不影响服务质量与派单结果。</div>
-      </div>
-    </div>
-
-    <div>
-      <div class="card" style="margin-bottom:14px">
-        <div class="card-h"><h3>邀请好友 · 推广返利</h3></div>
-        <div class="poster">
-          <div style="font-size:14px;font-weight:750">七号电竞 · 陪玩平台</div>
-          <div style="font-size:11.5px;color:var(--muted);margin-top:4px">扫码进入，新客立减 15 元</div>
-          <div class="qr">专属海报<br>二维码占位</div>
-          <div style="font-size:11.5px;color:var(--muted)">邀请码 <b style="color:var(--text)">${state.invite.code}</b></div>
-          <button class="btn btn-primary btn-block" style="margin-top:12px" data-poster="1">生成我的专属海报</button>
-        </div>
-        <div class="kv" style="margin-top:12px"><span>返利比例</span><span>好友下单金额 5%</span></div>
-        <div class="kv"><span>已邀请</span><span>${state.invite.invited} 人</span></div>
-        <div class="kv"><span>累计返利</span><span>${money(state.invite.reward)}</span></div>
-        <div class="callout co-info" style="margin-top:12px">好友通过你的海报下单并完成服务后，返利自动结算到余额。</div>
-      </div>
-
-      <div class="card">
-        <div class="card-h"><h3>会员等级权益</h3></div>
-        <div class="kv"><span>普通用户</span><span>无门槛 · 基础服务</span></div>
-        <div class="kv"><span>白银会员（当前）</span><span>下单 98 折 · 生日券</span></div>
-        <div class="kv"><span>黄金会员</span><span>95 折 · 优先派单 · 专属客服</span></div>
-        <div class="kv"><span>钻石会员</span><span>92 折 · 免排队 · 每月打赏券</span></div>
-        <div class="callout co-ok" style="margin-top:12px">升级条件：累计消费满 ¥1000 → 黄金；满 ¥3000 → 钻石。等级折扣由后台自定义配置。</div>
-        <button class="btn btn-block" style="margin-top:12px" data-nav="rank">查看排行榜 →</button>
-      </div>
-    </div>
-  </div>`;
+  `;
 }
 
 function pageProfile(){
@@ -1518,9 +1234,7 @@ function pageProfile(){
       <div class="card" style="margin-bottom:14px">
         <div class="card-h"><h3>快捷入口</h3></div>
         <div style="display:flex;flex-direction:column;gap:8px">
-          <button class="btn btn-block" data-nav="my">我的订单 →</button>
-          <button class="btn btn-block" data-nav="member">会员中心 · 优惠券与余额 →</button>
-          <button class="btn btn-block" data-nav="rank">排行榜 →</button>
+          <button class="btn btn-block" data-nav="home">返回首页 →</button>
           <button class="btn btn-block" data-nav="safety">服务与安全规则 →</button>
         </div>
       </div>
@@ -1530,57 +1244,21 @@ function pageProfile(){
         <div class="kv"><span>我的邀请码</span><span>${esc(state.invite.code)}</span></div>
         <div class="kv"><span>已邀请</span><span>${state.invite.invited} 人</span></div>
         <div class="kv"><span>累计返利</span><span>${money(state.invite.reward)}</span></div>
-        <button class="btn btn-block" style="margin-top:12px" data-nav="member">去生成专属海报 →</button>
+        <button class="btn btn-block" style="margin-top:12px" data-poster="1">去生成专属海报 →</button>
       </div>
     </div>
-  </div>`;
-}
-
-function pageRank(){
-  const r = state.ranksD;
-  const list = (rows, valFn) => rows.map((x,i)=>`
-    <div class="rank-row">
-      <div class="rank-no ${i<3?'g'+(i+1):''}">${i+1}</div>
-      <div><div class="rn">${esc(x[0])}</div><div class="rk">${esc(x[1]||'')}${x[2]?' · '+esc(x[2]):''}</div></div>
-      <div class="rv">${valFn(x)}</div>
-    </div>`).join('');
-  return `
-  <div class="callout co-info" style="margin-bottom:16px">排行榜每小时更新一次。<strong>榜单排名只看服务实力与口碑</strong>，不参与派单权重，也不影响价格。</div>
-  <div class="grid g3">
-    <div class="card">
-      <div class="card-h"><h3>打手接单榜</h3><span class="hint">按累计完成单量</span></div>
-      ${list(r.staff, x=>x[3]+' 单')}
-    </div>
-    <div class="card">
-      <div class="card-h"><h3>评价口碑榜</h3><span class="hint">按近 30 天好评率</span></div>
-      ${list(r.good, x=>x[3]+'%')}
-    </div>
-    <div class="card">
-      <div class="card-h"><h3>打赏人气榜</h3><span class="hint">按收到打赏金额</span></div>
-      ${list(r.tip, x=>money(x[3]))}
-    </div>
-  </div>
-  <div class="card" style="margin-top:16px">
-    <div class="card-h"><h3>榜单规则</h3></div>
-    <div class="kv"><span>接单榜</span><span>累计已完成订单数，剔除取消单</span></div>
-    <div class="kv"><span>口碑榜</span><span>近 30 天好评率，差评核实成立的订单不计分</span></div>
-    <div class="kv"><span>打赏榜</span><span>累计收到打赏金额，打赏全额归打手</span></div>
-    <div class="callout co-warn" style="margin-top:12px">严禁刷单、刷好评。核实刷榜将清退打手并扣除未结佣金。</div>
   </div>`;
 }
 
 /* ========================= 路由 ========================= */
 const PAGES = {
   home:['新赛季，找个靠谱的队友','服务与价格 · 下单流程 · 平台保障'],
-  book:['预约下单','选服务与时段，系统按排班匹配'],
-  my:['我的订单','查看状态 · 确认结单 · 申请售后'],
-  member:['会员中心','优惠券 · 余额充值 · 邀请返利 · 会员权益'],
-  rank:['排行榜','打手接单榜 · 评价口碑榜 · 打赏人气榜'],
   safety:['服务与安全规则','服务标准 · 打手红线 · 常见问题'],
   profile:['个人中心','账号信息 · 安全设置 · 我的数据']
 };
-const NAVS = [['home','首页'],['book','预约下单'],['my','我的订单'],['member','会员中心'],['rank','排行榜'],['safety','服务与安全规则']];
-const RENDER = {home:pageHome, book:pageBook, my:pageMy, member:pageMember, rank:pageRank, safety:pageSafety, profile:pageProfile};
+/* 顶部导航只保留「首页」与「服务与安全规则」；个人中心从右上角头像菜单进入 */
+const NAVS = [['home','首页'],['safety','服务与安全规则']];
+const RENDER = {home:pageHome, safety:pageSafety, profile:pageProfile};
 
 function renderNav(){
   $('#navigation').innerHTML = NAVS.map(n=>
@@ -1593,59 +1271,20 @@ function render(){
 function go(page){ state.page = page; render(); window.scrollTo(0,0); }
 
 document.addEventListener('click', e=>{
-  const t = e.target.closest('[data-nav],[data-bsvc],[data-bslot],[data-breq],[data-bmap],[data-book],[data-bookreset],[data-pay],[data-confirm],[data-after],[data-urge],[data-banner],[data-fx],[data-usecoupon],[data-recharge],[data-poster]');
+  const t = e.target.closest('[data-nav],[data-scroll],[data-banner],[data-poster]');
   if(!t) return;
   const d = t.dataset;
 
   if(d.nav){ go(d.nav); return; }
+  if(d.scroll){
+    const el = document.getElementById(d.scroll);
+    if(el && el.scrollIntoView) el.scrollIntoView({behavior:'smooth', block:'start'});
+    return;
+  }
   if(d.banner!==undefined){ state.banner = +d.banner; render(); return; }
-  if(d.fx){ state.fx[d.fx] = !state.fx[d.fx]; render(); toast('店铺特效已'+(state.fx[d.fx]?'开启':'关闭'), state.fx[d.fx]); return; }
-  if(d.usecoupon){
-    const c = state.coupons.find(x=>x.id===d.usecoupon);
-    if(c && !c.used){ go('book'); toast('已选中优惠券「'+c.title+'」，下单时自动抵扣'); }
-    return;
-  }
-  if(d.recharge){ toast('演示占位：充值 ¥'+d.recharge+' 需接入微信支付商户号（需个体工商户），当前不产生真实扣款'); return; }
   if(d.poster){ toast('演示占位：专属海报已生成（正式版需接入公众号/服务号后分享）', true); return; }
-  if(d.bsvc){ state.booking.svc = d.bsvc; if(state.page!=='book') state.page='book'; render(); return; }
-  if(d.bslot){ state.booking.slot = d.bslot; render(); return; }
-  if(d.breq){ state.booking.req = d.breq; render(); return; }
-  if(d.bmap){ state.booking.map = d.bmap; render(); return; }
-  if(d.bookreset){
-    state.booking = {svc:'P3',slot:'20—22',req:'魔王+',map:'零号大坝',age:false,risk:false};
-    render(); toast('表单已重置'); return;
-  }
-  if(d.book){
-    const b = state.booking;
-    if(!b.age || !b.risk){ toast('请先勾选两项确认（年龄核验 + 风险告知）'); return; }
-    const svc = svcById(b.svc);
-    const id = 'QH-1014-' + String(state.seq++).padStart(2,'0');
-    state.myOrders.unshift({
-      id, svc:b.svc, slot:b.slot+' 点', amount:svc.price, status:'待付款', date:'10-14',
-      map:b.map, guarantee: b.svc==='P3' ? '未达标免费补单/补时或按比例退款' : null
-    });
-    state.page = 'my'; render();
-    toast('预约已提交：' + id + '（待付款），请在订单中完成支付', true);
-    return;
-  }
-  if(d.pay){
-    const o = orderById(d.pay); o.status = '待接单'; render();
-    toast('支付成功：' + o.id + ' 进入待接单，匹配引擎开始工作', true); return;
-  }
-  if(d.confirm){
-    const o = orderById(d.confirm); o.status = '已完成'; render();
-    toast('已确认结单：' + o.id + '，感谢您的支持', true); return;
-  }
-  if(d.after){ toast('售后申请已提交，客服将在 24 小时内首次响应', true); return; }
-  if(d.urge){ toast('已提醒派单，若 15 分钟仍未匹配将自动转派下一位'); return; }
 });
 
-document.addEventListener('change', e=>{
-  if(e.target.id==='ckAge') state.booking.age = e.target.checked;
-  if(e.target.id==='ckRisk') state.booking.risk = e.target.checked;
-});
-
-initSched();
 render();
 
 /* BANNER 自动轮播（仅切换首页，避免整页重绘） */
