@@ -27,7 +27,6 @@
     --bg:#f5f6f8; --panel:#fff; --line:#e5e7eb; --line-soft:#f1f2f4;
     --text:#16181d; --muted:#6b7280; --muted-2:#9aa1ad;
     --brand:#4f46e5; --brand-soft:#eef0ff; --brand-line:#c9ccff;
-    --purple:#7c3aed; --purple-soft:#f5f0ff;
     --gold:#c2410c; --gold-soft:#fff3e8;
     --green:#0f9d58; --green-soft:#eaf7ef;
     --blue:#2563eb; --blue-soft:#eaf1ff;
@@ -72,7 +71,6 @@
   /* ---------- 布局 ---------- */
   .wrap{max-width:1180px;margin:0 auto;padding:22px 24px 80px}
   .grid{display:grid;gap:16px}
-  .g4{grid-template-columns:repeat(4,minmax(0,1fr))}
   .g3{grid-template-columns:repeat(3,minmax(0,1fr))}
   .g2{grid-template-columns:repeat(2,minmax(0,1fr))}
   .g-side{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}
@@ -105,7 +103,6 @@
 
   .badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:650;white-space:nowrap}
   .b-gray{background:#f1f2f5;color:#5b6371}
-  .b-purple{background:var(--purple-soft);color:var(--purple)}
   .b-gold{background:var(--gold-soft);color:var(--gold)}
   .b-green{background:var(--green-soft);color:var(--green)}
   .b-blue{background:var(--blue-soft);color:var(--blue)}
@@ -336,7 +333,6 @@
   .acct-sub{font-size:11.5px;color:var(--muted-2);margin-top:3px}
 
   @media (max-width:1080px){
-    .g4{grid-template-columns:repeat(2,minmax(0,1fr))}
     .g3,.steps{grid-template-columns:repeat(2,minmax(0,1fr))}
     .g-side{grid-template-columns:1fr}
   }
@@ -560,22 +556,8 @@ const SERVICES = [
 
 const state = {
   page:'home',
-  myOrders:[
-    {id:'QH-1014-11',svc:'P3',slot:'21:00—23:00',amount:200,status:'待付款',date:'10-14',map:'零号大坝',guarantee:'3 局保 2 次撤离'},
-    {id:'QH-1014-05',svc:'P3',slot:'18:00—20:00',amount:200,status:'已接单',staff:'D01',voucher:true,date:'10-14',map:'零号大坝',guarantee:'3 局保 2 次撤离'},
-    {id:'QH-1014-02',svc:'P2',slot:'20:00—22:00',amount:120,status:'待接单',date:'10-14',map:'长弓溪谷'},
-    {id:'QH-1013-08',svc:'P5',slot:'包周 · 每晚 20:00',amount:688,status:'已完成',staff:'D02',voucher:true,date:'10-13',map:'任意'}
-  ],
   /* —— 店铺装修 —— */
   banner:0,
-  coupons:[
-    {id:'C1', amount:15, min:60,  title:'新客通用券',   desc:'满 ¥60 可用 · 有效期至 10-31', used:false},
-    {id:'C2', amount:30, min:150, title:'护航专享券',   desc:'满 ¥150 可用 · 仅限护航类订单', used:false},
-    {id:'C3', amount:20, min:0,   title:'会员日折扣券', desc:'无门槛 · 白银会员专属', used:false},
-    {id:'C4', amount:50, min:300, title:'包周套餐券',   desc:'满 ¥300 可用 · 已使用', used:true}
-  ],
-  wallet:88.00,
-  memberLevel:'白银会员',
   invite:{code:'QH7-8823', invited:3, reward:36}
 };
 
@@ -1186,32 +1168,18 @@ function pageProfile(){
   const name = email ? displayName(email) : '未登录';
   const uid = currentUser && currentUser.id ? String(currentUser.id).slice(0, 8) : '—';
   const created = currentUser && currentUser.created_at ? String(currentUser.created_at).slice(0, 10) : '—';
-  const orders = state.myOrders;
-  const doing = orders.filter(o=>o.status!=='已完成').length;
-  const done  = orders.filter(o=>o.status==='已完成').length;
-  const avail = state.coupons.filter(c=>!c.used).length;
 
   return `
   <div class="card" style="margin-bottom:16px">
     <div class="acct-card">
       <span class="avatar acct-avatar" style="${avatarStyleAttr(email)}">${esc(avatarOf(email))}</span>
       <div style="min-width:0;flex:1">
-        <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
-          <b style="font-size:18px;letter-spacing:-.3px">${esc(name)}</b>
-          <span class="badge b-purple">${esc(state.memberLevel)}</span>
-        </div>
+        <b style="font-size:18px;letter-spacing:-.3px">${esc(name)}</b>
         <div class="acct-id">${esc(email || '未登录')}</div>
         <div class="acct-sub">用户 ID ${esc(uid)}　注册于 ${esc(created)}</div>
       </div>
       <button class="btn" data-user-act="logout">退出登录</button>
     </div>
-  </div>
-
-  <div class="grid g4" style="margin-bottom:16px">
-    <div class="card" style="padding:15px 16px"><div style="font-size:12px;color:var(--muted)">进行中订单</div><div style="font-size:20px;font-weight:750;letter-spacing:-.5px;margin:5px 0 1px">${doing} 笔</div><div style="font-size:11.5px;color:var(--muted-2)">待付款 / 待接单 / 已接单</div></div>
-    <div class="card" style="padding:15px 16px"><div style="font-size:12px;color:var(--muted)">已完成订单</div><div style="font-size:20px;font-weight:750;letter-spacing:-.5px;margin:5px 0 1px">${done} 笔</div><div style="font-size:11.5px;color:var(--muted-2)">累计 ${orders.length} 笔</div></div>
-    <div class="card" style="padding:15px 16px"><div style="font-size:12px;color:var(--muted)">可用优惠券</div><div style="font-size:20px;font-weight:750;letter-spacing:-.5px;margin:5px 0 1px">${avail} 张</div><div style="font-size:11.5px;color:var(--muted-2)">共 ${state.coupons.length} 张</div></div>
-    <div class="card" style="padding:15px 16px"><div style="font-size:12px;color:var(--muted)">账户余额</div><div style="font-size:20px;font-weight:750;letter-spacing:-.5px;margin:5px 0 1px">${money(state.wallet)}</div><div style="font-size:11.5px;color:var(--muted-2)">可用于下单抵扣</div></div>
   </div>
 
   <div class="grid g-side">
