@@ -291,6 +291,51 @@
   .auth-switch button:hover{text-decoration:underline}
   .auth-tip{margin-top:13px;font-size:11.5px;color:var(--muted-2);line-height:1.75;text-align:center}
 
+  /* ---------- 登录态：头像 + 悬浮菜单 ---------- */
+  .user-menu{position:relative}
+  .user-btn{
+    display:flex;align-items:center;gap:5px;padding:2px 4px 2px 2px;border:1px solid var(--line);
+    background:#fff;border-radius:999px;cursor:pointer;transition:border-color .16s,box-shadow .16s;
+  }
+  .user-btn .avatar{width:30px;height:30px;font-size:12.5px;transition:transform .16s}
+  .user-btn .caret{width:11px;height:11px;flex:0 0 11px;color:var(--muted-2);transition:transform .18s}
+  .user-menu:hover .user-btn,.user-menu.open .user-btn{
+    border-color:var(--brand-line);box-shadow:0 0 0 3px rgba(79,70,229,.1);
+  }
+  .user-menu:hover .user-btn .caret,.user-menu.open .user-btn .caret{transform:rotate(180deg)}
+  .user-drop{
+    position:absolute;right:0;top:calc(100% + 9px);width:236px;z-index:60;
+    background:#fff;border:1px solid var(--line);border-radius:15px;padding:7px;
+    box-shadow:0 18px 44px rgba(22,24,29,.16);
+    opacity:0;visibility:hidden;transform:translateY(-6px);
+    transition:opacity .16s ease,transform .16s ease,visibility .16s;
+  }
+  /* 悬浮桥：鼠标从头像移到菜单之间的空隙里不会闪断 */
+  .user-drop::before{content:"";position:absolute;left:0;right:0;top:-10px;height:10px}
+  .user-menu:hover .user-drop,.user-menu.open .user-drop{
+    opacity:1;visibility:visible;transform:translateY(0);
+  }
+  .ud-head{display:flex;align-items:center;gap:10px;padding:9px 10px 11px}
+  .ud-head .avatar{width:38px;height:38px;flex:0 0 38px;font-size:15px;border-radius:12px}
+  .ud-meta{min-width:0}
+  .ud-meta b{display:block;font-size:13px;letter-spacing:.1px;line-height:1.45}
+  .ud-meta span{display:block;font-size:11.5px;color:var(--muted-2);line-height:1.5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ud-sep{height:1px;background:var(--line-soft);margin:2px 5px 6px}
+  .ud-item{
+    display:flex;align-items:center;gap:9px;width:100%;border:0;background:transparent;
+    font-family:inherit;font-size:13px;color:#31384a;font-weight:600;text-align:left;
+    padding:9px 10px;border-radius:10px;cursor:pointer;
+  }
+  .ud-item:hover{background:#f5f6f8}
+  .ud-item.danger{color:var(--red)}
+  .ud-item.danger:hover{background:var(--red-soft)}
+
+  /* ---------- 个人中心 ---------- */
+  .acct-card{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .acct-avatar{width:64px;height:64px;flex:0 0 64px;border-radius:20px;font-size:26px}
+  .acct-id{font-size:12.5px;color:var(--muted);margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .acct-sub{font-size:11.5px;color:var(--muted-2);margin-top:3px}
+
   @media (max-width:1080px){
     .g4{grid-template-columns:repeat(2,minmax(0,1fr))}
     .g3,.steps{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -315,9 +360,27 @@
         <button class="btn btn-sm btn-primary" id="btn-login">登录</button>
         <button class="btn btn-sm" id="btn-signup">注册</button>
       </div>
-      <div id="user-box" style="display:none;align-items:center;gap:8px">
-        <span style="font-size:12px;color:var(--muted)" id="user-email"></span>
-        <button class="btn btn-sm" id="btn-logout">退出</button>
+      <div id="user-box" style="display:none">
+        <div class="user-menu" id="user-menu">
+          <button class="user-btn" type="button" id="btn-user" aria-haspopup="true" aria-expanded="false" aria-label="账号菜单">
+            <span class="avatar" id="user-avatar">U</span>
+            <svg class="caret" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="user-drop" id="user-drop" role="menu">
+            <div class="ud-head">
+              <span class="avatar" id="user-avatar-lg">U</span>
+              <div class="ud-meta">
+                <b id="user-name">账号</b>
+                <span id="user-email">—</span>
+              </div>
+            </div>
+            <div class="ud-sep"></div>
+            <button class="ud-item" type="button" role="menuitem" data-user-act="profile">个人中心</button>
+            <button class="ud-item danger" type="button" role="menuitem" data-user-act="logout">退出登录</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -453,6 +516,35 @@
   </div>
 </div>
 
+<!-- ==================== 修改密码弹窗（个人中心里调用，可正常关闭） ==================== -->
+<div class="auth-mask" id="mask-chpwd">
+  <div class="auth-dlg" role="dialog" aria-modal="true" aria-labelledby="chpwd-title">
+    <button class="cls" type="button" data-auth-close aria-label="关闭">×</button>
+    <h2 id="chpwd-title">修改密码</h2>
+    <p class="sub">设置新的登录密码，修改后当前设备保持登录，其他设备需要重新登录。</p>
+
+    <div class="msg" id="chpwd-msg"></div>
+
+    <form id="form-chpwd" novalidate>
+      <div class="fld">
+        <label for="cp-pwd">新密码</label>
+        <input type="password" id="cp-pwd" placeholder="至少 6 位" autocomplete="new-password" />
+        <div class="err" id="cp-pwd-err"></div>
+      </div>
+      <div class="fld">
+        <label for="cp-pwd2">确认新密码</label>
+        <input type="password" id="cp-pwd2" placeholder="请再次输入新密码" autocomplete="new-password" />
+        <div class="err" id="cp-pwd2-err"></div>
+      </div>
+      <div class="go">
+        <button class="btn btn-primary btn-lg" type="submit" id="chpwd-submit">保存新密码</button>
+      </div>
+    </form>
+
+    <div class="auth-switch">不确定？<button type="button" data-auth-close>取消</button></div>
+  </div>
+</div>
+
 <script>
 /* =========================================================
    七号电竞 · 客户端
@@ -527,6 +619,9 @@ const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&l
 const statusCls = st => ({'待付款':'b-gray','待接单':'b-amber','已接单':'b-blue','已完成':'b-green'}[st]||'b-gray');
 const orderById = id => state.myOrders.find(o=>o.id===id);
 
+/* 当前登录用户（Supabase user 对象），未登录为 null */
+let currentUser = null;
+
 function toast(msg, ok){
   const t = $('#toast'); t.textContent = msg; t.className = 'toast show' + (ok?' ok':'');
   clearTimeout(t._tm); t._tm = setTimeout(()=>t.className='toast', 2600);
@@ -560,7 +655,8 @@ const AUTH_MASK = {
   login:  { mask:'mask-login',  submit:'login-submit'  },
   signup: { mask:'mask-signup', submit:'signup-submit' },
   forgot: { mask:'mask-forgot', submit:'forgot-submit' },
-  reset:  { mask:'mask-reset',  submit:'reset-submit'  }  /* 从重置邮件跳回时出现，不提供随手关闭 */
+  reset:  { mask:'mask-reset',  submit:'reset-submit'  },  /* 从重置邮件跳回时出现，不提供随手关闭 */
+  chpwd:  { mask:'mask-chpwd',  submit:'chpwd-submit'  }   /* 个人中心里主动改密，可正常关闭 */
 };
 const AUTH_KEYS = Object.keys(AUTH_MASK);
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -665,6 +761,75 @@ async function applyNewPassword(password){
   const { error } = await supabaseClient.auth.updateUser({ password });
   if (error) throw new Error(error.message);
 }
+
+/* =========================================================
+   登录态展示：头像 + 悬浮菜单（个人中心 / 退出登录）
+   ========================================================= */
+const avatarOf = email => (String(email || '').trim()[0] || 'U').toUpperCase();
+const displayName = email => String(email || '').split('@')[0] || '账号';
+/* 同一邮箱恒定得到同一种颜色 */
+function avatarTint(email){
+  const s = String(email || '');
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 360;
+  return { bg: 'hsl(' + h + ' 68% 92%)', fg: 'hsl(' + h + ' 55% 36%)' };
+}
+function avatarStyleAttr(email){
+  const t = avatarTint(email);
+  return 'background:' + t.bg + ';color:' + t.fg;
+}
+
+function paintUser(user){
+  currentUser = user || null;
+  const email = currentUser && currentUser.email ? currentUser.email : '';
+  const tint = avatarTint(email);
+  ['user-avatar','user-avatar-lg'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = avatarOf(email);
+    el.style.background = tint.bg;
+    el.style.color = tint.fg;
+  });
+  const nameEl = document.getElementById('user-name');
+  if (nameEl) nameEl.textContent = displayName(email);
+  const mailEl = document.getElementById('user-email');
+  if (mailEl) mailEl.textContent = email || '—';
+  const menu = document.getElementById('user-menu');
+  if (menu) menu.dataset.email = email;
+}
+
+function closeUserMenu(){
+  const menu = document.getElementById('user-menu');
+  if (!menu) return;
+  menu.classList.remove('open');
+  const btn = document.getElementById('btn-user');
+  if (btn) btn.setAttribute('aria-expanded', 'false');
+}
+
+/* 点击头像：给触屏设备一个开关（桌面端鼠标悬停即可展开） */
+document.getElementById('btn-user').addEventListener('click', e => {
+  e.stopPropagation();
+  const menu = document.getElementById('user-menu');
+  const open = menu.classList.toggle('open');
+  e.currentTarget.setAttribute('aria-expanded', open ? 'true' : 'false');
+});
+
+/* 点菜单里的项目 */
+document.addEventListener('click', e => {
+  const item = e.target.closest('[data-user-act]');
+  if (!item) {
+    /* 点空白处收起（悬停展开的菜单靠 CSS，这里只管点击展开的那份状态） */
+    if (!e.target.closest('#user-menu')) closeUserMenu();
+    return;
+  }
+  const act = item.dataset.userAct;
+  closeUserMenu();
+  /* 点完要把焦点从菜单里挪走，否则菜单会一直挂着 */
+  const a = document.activeElement;
+  if (a && a.closest && a.closest('#user-menu')) a.blur();
+  if (act === 'profile'){ go('profile'); return; }
+  if (act === 'logout'){ signOut(); return; }
+});
 
 /* 登录弹窗提交 */
 document.getElementById('form-login').addEventListener('submit', async e => {
@@ -782,6 +947,32 @@ document.getElementById('reset-cancel').addEventListener('click', async () => {
   await signOut();
 });
 
+/* 个人中心里主动改密 */
+document.getElementById('form-chpwd').addEventListener('submit', async e => {
+  e.preventDefault();
+  const pwd = document.getElementById('cp-pwd').value;
+  const pwd2 = document.getElementById('cp-pwd2').value;
+  let ok = true;
+  if (pwd.length < 6){ fieldErr('cp-pwd','cp-pwd-err','密码至少 6 位'); ok = false; }
+  else fieldErr('cp-pwd','cp-pwd-err','');
+  if (pwd2 !== pwd){ fieldErr('cp-pwd2','cp-pwd2-err', pwd2 ? '两次输入的密码不一致' : '请再次输入新密码'); ok = false; }
+  else fieldErr('cp-pwd2','cp-pwd2-err','');
+  if (!ok) return;
+
+  dialogMsg('chpwd-msg','');
+  setBusy('chpwd-submit', true, '保存中…');
+  try {
+    await applyNewPassword(pwd);
+    dialogMsg('chpwd-msg','密码已更新，下次登录请使用新密码。','ok');
+    toast('密码已更新', true);
+    setBusy('chpwd-submit', false);
+    setTimeout(() => closeAuthModals(), 1200);
+  } catch (err) {
+    dialogMsg('chpwd-msg', err.message || '保存失败，请稍后重试');
+    setBusy('chpwd-submit', false);
+  }
+});
+
 /* 导航栏两个独立入口 */
 document.getElementById('btn-login').addEventListener('click', () => openAuthModal('login'));
 document.getElementById('btn-signup').addEventListener('click', () => openAuthModal('signup'));
@@ -809,7 +1000,8 @@ document.addEventListener('input', e => {
     'lg-email':['lg-email','lg-email-err'], 'lg-pwd':['lg-pwd','lg-pwd-err'],
     'sg-email':['sg-email','sg-email-err'], 'sg-pwd':['sg-pwd','sg-pwd-err'], 'sg-pwd2':['sg-pwd2','sg-pwd2-err'],
     'fg-email':['fg-email','fg-email-err'],
-    'rs-pwd':['rs-pwd','rs-pwd-err'], 'rs-pwd2':['rs-pwd2','rs-pwd2-err']
+    'rs-pwd':['rs-pwd','rs-pwd-err'], 'rs-pwd2':['rs-pwd2','rs-pwd2-err'],
+    'cp-pwd':['cp-pwd','cp-pwd-err'], 'cp-pwd2':['cp-pwd2','cp-pwd2-err']
   };
   const m = map[e.target.id];
   if (m) fieldErr(m[0], m[1], '');
@@ -817,12 +1009,11 @@ document.addEventListener('input', e => {
 
 /* Esc 关闭 */
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeAuthModals();
+  if (e.key !== 'Escape') return;
+  closeUserMenu();
+  closeAuthModals();
 });
 
-document.getElementById('btn-logout').addEventListener('click', () => {
-  signOut();
-});
 if (supabaseClient) {
   supabaseClient.auth.onAuthStateChange((event, session) => {
     const user = session?.user;
@@ -840,10 +1031,15 @@ if (supabaseClient) {
     if (user) {
       document.getElementById('auth-box').style.display = 'none';
       document.getElementById('user-box').style.display = 'flex';
-      document.getElementById('user-email').textContent = user.email;
+      paintUser(user);
+      /* 未登录时进不去个人中心，登录后如果正停在那一页就重绘一次 */
+      if (state.page === 'profile') render();
     } else {
+      currentUser = null;
       document.getElementById('auth-box').style.display = 'flex';
       document.getElementById('user-box').style.display = 'none';
+      closeUserMenu();
+      if (state.page === 'profile'){ state.page = 'home'; render(); }
     }
   });
 
@@ -1269,6 +1465,77 @@ function pageMember(){
   </div>`;
 }
 
+function pageProfile(){
+  const email = currentUser && currentUser.email ? currentUser.email : '';
+  const name = email ? displayName(email) : '未登录';
+  const uid = currentUser && currentUser.id ? String(currentUser.id).slice(0, 8) : '—';
+  const created = currentUser && currentUser.created_at ? String(currentUser.created_at).slice(0, 10) : '—';
+  const orders = state.myOrders;
+  const doing = orders.filter(o=>o.status!=='已完成').length;
+  const done  = orders.filter(o=>o.status==='已完成').length;
+  const avail = state.coupons.filter(c=>!c.used).length;
+
+  return `
+  <div class="card" style="margin-bottom:16px">
+    <div class="acct-card">
+      <span class="avatar acct-avatar" style="${avatarStyleAttr(email)}">${esc(avatarOf(email))}</span>
+      <div style="min-width:0;flex:1">
+        <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+          <b style="font-size:18px;letter-spacing:-.3px">${esc(name)}</b>
+          <span class="badge b-purple">${esc(state.memberLevel)}</span>
+        </div>
+        <div class="acct-id">${esc(email || '未登录')}</div>
+        <div class="acct-sub">用户 ID ${esc(uid)}　注册于 ${esc(created)}</div>
+      </div>
+      <button class="btn" data-user-act="logout">退出登录</button>
+    </div>
+  </div>
+
+  <div class="grid g4" style="margin-bottom:16px">
+    <div class="card" style="padding:15px 16px"><div style="font-size:12px;color:var(--muted)">进行中订单</div><div style="font-size:20px;font-weight:750;letter-spacing:-.5px;margin:5px 0 1px">${doing} 笔</div><div style="font-size:11.5px;color:var(--muted-2)">待付款 / 待接单 / 已接单</div></div>
+    <div class="card" style="padding:15px 16px"><div style="font-size:12px;color:var(--muted)">已完成订单</div><div style="font-size:20px;font-weight:750;letter-spacing:-.5px;margin:5px 0 1px">${done} 笔</div><div style="font-size:11.5px;color:var(--muted-2)">累计 ${orders.length} 笔</div></div>
+    <div class="card" style="padding:15px 16px"><div style="font-size:12px;color:var(--muted)">可用优惠券</div><div style="font-size:20px;font-weight:750;letter-spacing:-.5px;margin:5px 0 1px">${avail} 张</div><div style="font-size:11.5px;color:var(--muted-2)">共 ${state.coupons.length} 张</div></div>
+    <div class="card" style="padding:15px 16px"><div style="font-size:12px;color:var(--muted)">账户余额</div><div style="font-size:20px;font-weight:750;letter-spacing:-.5px;margin:5px 0 1px">${money(state.wallet)}</div><div style="font-size:11.5px;color:var(--muted-2)">可用于下单抵扣</div></div>
+  </div>
+
+  <div class="grid g-side">
+    <div>
+      <div class="card">
+        <div class="card-h"><h3>账号与安全</h3><span class="hint">登录凭证由 Supabase Auth 托管</span></div>
+        <div class="kv"><span>登录邮箱</span><span>${esc(email || '未登录')}</span></div>
+        <div class="kv"><span>登录密码</span><span>已设置</span></div>
+        <div class="kv"><span>邮箱验证</span><span>${currentUser && currentUser.email_confirmed_at ? '已验证' : '未验证'}</span></div>
+        <div class="kv"><span>最近登录</span><span>${currentUser && currentUser.last_sign_in_at ? String(currentUser.last_sign_in_at).slice(0,10) : '—'}</span></div>
+        <div class="acts" style="margin-top:14px">
+          <button class="btn btn-primary" data-auth-open="chpwd">修改密码</button>
+          <button class="btn" data-user-act="logout">退出登录</button>
+        </div>
+        <div class="callout co-warn" style="margin-top:14px">平台不会索要你的账号密码或短信验证码，也不会代你登录账号。修改密码后请勿将新密码告知任何人。</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-h"><h3>快捷入口</h3></div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="btn btn-block" data-nav="my">我的订单 →</button>
+          <button class="btn btn-block" data-nav="member">会员中心 · 优惠券与余额 →</button>
+          <button class="btn btn-block" data-nav="rank">排行榜 →</button>
+          <button class="btn btn-block" data-nav="safety">服务与安全规则 →</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h3>邀请返利</h3></div>
+        <div class="kv"><span>我的邀请码</span><span>${esc(state.invite.code)}</span></div>
+        <div class="kv"><span>已邀请</span><span>${state.invite.invited} 人</span></div>
+        <div class="kv"><span>累计返利</span><span>${money(state.invite.reward)}</span></div>
+        <button class="btn btn-block" style="margin-top:12px" data-nav="member">去生成专属海报 →</button>
+      </div>
+    </div>
+  </div>`;
+}
+
 function pageRank(){
   const r = state.ranksD;
   const list = (rows, valFn) => rows.map((x,i)=>`
@@ -1309,10 +1576,11 @@ const PAGES = {
   my:['我的订单','查看状态 · 确认结单 · 申请售后'],
   member:['会员中心','优惠券 · 余额充值 · 邀请返利 · 会员权益'],
   rank:['排行榜','打手接单榜 · 评价口碑榜 · 打赏人气榜'],
-  safety:['服务与安全规则','服务标准 · 打手红线 · 常见问题']
+  safety:['服务与安全规则','服务标准 · 打手红线 · 常见问题'],
+  profile:['个人中心','账号信息 · 安全设置 · 我的数据']
 };
 const NAVS = [['home','首页'],['book','预约下单'],['my','我的订单'],['member','会员中心'],['rank','排行榜'],['safety','服务与安全规则']];
-const RENDER = {home:pageHome, book:pageBook, my:pageMy, member:pageMember, rank:pageRank, safety:pageSafety};
+const RENDER = {home:pageHome, book:pageBook, my:pageMy, member:pageMember, rank:pageRank, safety:pageSafety, profile:pageProfile};
 
 function renderNav(){
   $('#navigation').innerHTML = NAVS.map(n=>
