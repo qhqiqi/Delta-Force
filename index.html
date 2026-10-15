@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>七号电竞 · 陪玩平台（客户端 · 电脑版）</title>
+<style>
+  :root{
+    --bg:#f5f6f8; --panel:#fff; --line:#e5e7eb; --line-soft:#f1f2f4;
+    --text:#16181d; --muted:#6b7280; --muted-2:#9aa1ad;
+    --brand:#4f46e5; --brand-soft:#eef0ff; --brand-line:#c9ccff;
+    --purple:#7c3aed; --purple-soft:#f5f0ff;
+    --gold:#c2410c; --gold-soft:#fff3e8;
+    --green:#0f9d58; --green-soft:#eaf7ef;
+    --blue:#2563eb; --blue-soft:#eaf1ff;
+    --red:#dc2626; --red-soft:#fdecec;
+    --amber:#b45309; --amber-soft:#fff7e6;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--text);
+    font:14px/1.6 "PingFang SC","Microsoft YaHei","Hiragino Sans GB",system-ui,-apple-system,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  button{font-family:inherit}
+
+  /* ---------- 顶部导航 ---------- */
+  .topnav{
+    position:sticky;top:0;z-index:20;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--line);
+  }
+  .topnav-in{max-width:1180px;margin:0 auto;padding:11px 24px;display:flex;align-items:center;gap:26px}
+  .brand{display:flex;align-items:center;gap:10px;cursor:pointer}
+  .brand-mark{
+    width:36px;height:36px;border-radius:11px;flex:0 0 36px;
+    background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;
+    box-shadow:0 4px 12px rgba(79,70,229,.28);
+  }
+  .brand-text strong{display:block;font-size:15px;letter-spacing:.2px;line-height:1.2}
+  .brand-text span{display:block;font-size:11px;color:var(--muted-2);letter-spacing:.6px}
+  .navlinks{display:flex;gap:4px}
+  .navlinks button{
+    border:0;background:transparent;font-size:13.5px;color:#4a5263;padding:7px 14px;border-radius:9px;cursor:pointer;font-weight:600;
+  }
+  .navlinks button:hover{background:#f5f6f8}
+  .navlinks button.active{background:var(--brand-soft);color:var(--brand)}
+  .nav-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .pill{font-size:11.5px;padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--muted)}
+  .pill-online{background:var(--green-soft);border-color:#cbe9d6;color:var(--green);font-weight:600}
+  .avatar{width:32px;height:32px;border-radius:50%;background:#ebeef4;color:#40485a;font-size:12.5px;font-weight:700;display:flex;align-items:center;justify-content:center}
+
+  /* ---------- 布局 ---------- */
+  .wrap{max-width:1180px;margin:0 auto;padding:22px 24px 80px}
+  .grid{display:grid;gap:16px}
+  .g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .g-side{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}
+  .sec-title{font-size:13px;font-weight:700;color:#2b3140;margin:22px 0 11px;display:flex;align-items:center;gap:8px}
+  .sec-title::before{content:"";width:3px;height:13px;border-radius:2px;background:var(--brand)}
+
+  .hero{
+    border-radius:20px;padding:34px 34px 30px;color:#fff;position:relative;overflow:hidden;
+    background:linear-gradient(125deg,#4f46e5,#7c3aed 62%,#9333ea);
+    box-shadow:0 18px 44px rgba(79,70,229,.28);
+  }
+  .hero::after{content:"";position:absolute;right:-70px;top:-90px;width:280px;height:280px;border-radius:50%;background:rgba(255,255,255,.11)}
+  .hero::before{content:"";position:absolute;right:110px;bottom:-120px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.07)}
+  .hero .in{position:relative;z-index:1;max-width:640px}
+  .hero .kicker{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:650;margin-bottom:15px}
+  .hero h1{margin:0;font-size:31px;line-height:1.28;letter-spacing:-.6px}
+  .hero p{margin:12px 0 0;font-size:13.5px;line-height:1.85;opacity:.9}
+  .hero .acts{display:flex;gap:11px;margin-top:22px;flex-wrap:wrap}
+  .hero .acts .btn{background:rgba(255,255,255,.96);border-color:transparent;color:#3b3a8f;font-size:13.5px;padding:10px 20px;font-weight:700}
+  .hero .acts .btn.ghost{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);color:#fff}
+  .hero .feats{display:flex;gap:26px;margin-top:26px;flex-wrap:wrap;position:relative;z-index:1}
+  .hero .ft b{display:block;font-size:20px;font-weight:750;letter-spacing:-.4px}
+  .hero .ft span{font-size:11.5px;opacity:.85}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:19px}
+  .card+.card{margin-top:14px}
+  .card-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px}
+  .card-h h3{margin:0;font-size:14.5px}
+  .card-h .hint{font-size:12px;color:var(--muted-2)}
+
+  .badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:650;white-space:nowrap}
+  .b-gray{background:#f1f2f5;color:#5b6371}
+  .b-purple{background:var(--purple-soft);color:var(--purple)}
+  .b-gold{background:var(--gold-soft);color:var(--gold)}
+  .b-green{background:var(--green-soft);color:var(--green)}
+  .b-blue{background:var(--blue-soft);color:var(--blue)}
+  .b-red{background:var(--red-soft);color:var(--red)}
+  .b-amber{background:var(--amber-soft);color:var(--amber)}
+  .b-brand{background:var(--brand-soft);color:var(--brand)}
+
+  table.tbl{width:100%;border-collapse:collapse}
+  table.tbl th{font-size:11.5px;color:var(--muted);text-align:left;font-weight:650;padding:9px 10px;border-bottom:1px solid var(--line);background:#fbfbfc;white-space:nowrap}
+  table.tbl td{padding:11px 10px;border-bottom:1px solid var(--line-soft);font-size:13px;vertical-align:middle}
+  table.tbl tr:last-child td{border-bottom:0}
+  table.tbl td.num{font-variant-numeric:tabular-nums;font-weight:600}
+  .tbl-wrap{overflow:auto}
+
+  .btn{
+    border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 14px;font-size:12.5px;
+    cursor:pointer;color:#31384a;font-weight:600;white-space:nowrap;
+  }
+  .btn:hover{border-color:#c9cfd9;background:#fcfcfd}
+  .btn-primary{background:var(--brand);border-color:var(--brand);color:#fff}
+  .btn-primary:hover{background:#443bd0;border-color:#443bd0}
+  .btn-lg{padding:11px 22px;font-size:14px;border-radius:11px}
+  .btn-sm{padding:5px 10px;font-size:12px;border-radius:8px}
+  .btn-block{width:100%}
+  .btn[disabled]{opacity:.45;cursor:not-allowed}
+  .acts{display:flex;gap:8px;flex-wrap:wrap}
+
+  /* 服务卡 */
+  .svc{border:1px solid var(--line);border-radius:15px;padding:17px;background:#fff;cursor:pointer;transition:border-color .18s ease,transform .18s ease,box-shadow .18s ease;position:relative}
+  .svc:hover{border-color:var(--brand-line);transform:translateY(-2px);box-shadow:0 12px 26px rgba(79,70,229,.1)}
+  .svc.on{border-color:var(--brand);box-shadow:0 0 0 3px rgba(79,70,229,.12)}
+  .svc .top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+  .svc .nm{font-size:15px;font-weight:750}
+  .svc .pr{font-size:19px;font-weight:750;color:var(--brand);letter-spacing:-.4px;font-variant-numeric:tabular-nums}
+  .svc .pr small{font-size:11.5px;color:var(--muted-2);font-weight:600}
+  .svc .ds{font-size:12px;color:var(--muted);line-height:1.7;margin-top:8px;min-height:40px}
+  .svc .tags{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+
+  /* 步骤 */
+  .steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+  .step{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px}
+  .step .n{width:26px;height:26px;border-radius:9px;background:var(--brand-soft);color:var(--brand);font-weight:800;font-size:12.5px;display:flex;align-items:center;justify-content:center}
+  .step .t{font-size:13.5px;font-weight:700;margin-top:10px}
+  .step .d{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.7}
+
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{
+    border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 15px;font-size:12.5px;
+    cursor:pointer;color:#3c4453;font-weight:500;
+  }
+  .chip:hover{border-color:#c9cfd9}
+  .chip.active{background:var(--brand-soft);border-color:var(--brand-line);color:var(--brand);font-weight:700}
+  .chip .p{font-size:11px;opacity:.75;margin-left:3px}
+
+  .form-row{margin-bottom:16px}
+  .form-row>label.tt{display:block;font-size:12.5px;color:#3c4453;font-weight:700;margin-bottom:9px}
+  .chk{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;color:#3c4453;margin-bottom:9px;line-height:1.75;cursor:pointer}
+  .chk input{margin-top:3px;width:15px;height:15px;flex:0 0 15px;accent-color:#4f46e5}
+
+  .callout{border-radius:12px;padding:12px 14px;font-size:12.5px;line-height:1.75;border:1px solid}
+  .co-info{background:var(--blue-soft);border-color:#d5e3ff;color:#1e40af}
+  .co-warn{background:var(--amber-soft);border-color:#f6e3c0;color:#8a5a06}
+  .co-danger{background:var(--red-soft);border-color:#f6d4d4;color:#a51f1f}
+  .co-ok{background:var(--green-soft);border-color:#cbe9d6;color:#0b6b3f}
+
+  .kv{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:8px 0;border-bottom:1px dashed var(--line-soft)}
+  .kv:last-child{border-bottom:0}
+  .kv span:first-child{color:var(--muted)}
+  .kv span:last-child{font-weight:650;font-variant-numeric:tabular-nums}
+  .kv.total span:last-child{font-size:17px;color:var(--brand);font-weight:750}
+
+  .mrow{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:9px 0;border-bottom:1px dashed var(--line-soft)}
+  .mrow:last-child{border-bottom:0}
+  .mrow .score{margin-left:auto;font-weight:750;color:var(--brand);font-variant-numeric:tabular-nums}
+  .why{font-size:11px;color:var(--muted-2)}
+
+  .list{display:flex;flex-direction:column;gap:10px}
+  .li{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:12px 13px;background:#fff}
+  .li-ic{width:27px;height:27px;flex:0 0 27px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:800}
+  .li .t{font-size:13px;font-weight:650}
+  .li .d{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.7}
+  .li .right{margin-left:auto;display:flex;gap:7px;align-items:center;flex-shrink:0}
+
+  .empty{color:var(--muted-2);font-size:12.5px;text-align:center;padding:22px 0}
+  .foot{max-width:1180px;margin:0 auto;padding:22px 24px 40px;color:var(--muted-2);font-size:11.5px;line-height:1.9;border-top:1px solid var(--line)}
+  .foot b{color:#4a5263}
+
+  .toast{
+    position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(16px);
+    background:#171b26;color:#fff;font-size:13px;padding:10px 17px;border-radius:11px;
+    opacity:0;pointer-events:none;transition:.22s;z-index:99;box-shadow:0 8px 26px rgba(0,0,0,.22);max-width:70vw;text-align:center;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast.ok{background:#0f5132}
+
+  /* ---------- 店铺装修 / 营销（V2 新增） ---------- */
+  .banner{position:relative;border-radius:18px;overflow:hidden;height:188px;background:linear-gradient(120deg,#4f46e5,#7c3aed 55%,#db2777);color:#fff;box-shadow:0 14px 34px rgba(79,70,229,.26)}
+  .banner .sl{position:absolute;inset:0;opacity:0;transition:opacity .55s ease;display:flex;flex-direction:column;justify-content:center;padding:0 34px}
+  .banner .sl.on{opacity:1}
+  .banner .sl b{font-size:23px;letter-spacing:-.4px}
+  .banner .sl p{margin:8px 0 0;font-size:13px;opacity:.9;max-width:560px}
+  .banner .dots{position:absolute;right:20px;bottom:16px;display:flex;gap:6px;z-index:2}
+  .banner .dots i{width:7px;height:7px;border-radius:999px;background:rgba(255,255,255,.45);cursor:pointer;transition:.2s}
+  .banner .dots i.on{background:#fff;width:18px}
+  .notice{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 13px;margin-top:12px;overflow:hidden}
+  .notice .tag{flex:0 0 auto;background:var(--gold-soft);color:var(--gold);font-size:11.5px;font-weight:700;border-radius:999px;padding:3px 9px}
+  .notice .track{flex:1;min-width:0;overflow:hidden;white-space:nowrap}
+  .notice .track span{display:inline-block;padding-left:100%;animation:marquee 22s linear infinite;font-size:12.5px;color:#4a5263}
+  @keyframes marquee{to{transform:translateX(-100%)}}
+  .effect-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
+  .effect-row .lb{font-size:12px;color:var(--muted)}
+  .fx{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 13px;font-size:12px;color:#3c4453;cursor:pointer}
+  .fx.on{background:var(--purple-soft);border-color:#e2d4ff;color:var(--purple);font-weight:700}
+
+  .coupon{position:relative;display:flex;border:1px solid var(--brand-line);background:linear-gradient(135deg,#f6f5ff,#fdf3ff);border-radius:12px;overflow:hidden}
+  .coupon .amt{flex:0 0 96px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--brand);font-weight:750;border-right:1px dashed var(--brand-line)}
+  .coupon .amt b{font-size:21px;letter-spacing:-.5px}
+  .coupon .amt span{font-size:10.5px;color:var(--muted-2)}
+  .coupon .info{flex:1;padding:10px 12px;min-width:0}
+  .coupon .info .t{font-size:13px;font-weight:700}
+  .coupon .info .d{font-size:11px;color:var(--muted);margin-top:2px}
+  .coupon .get{margin:auto 12px auto 0;flex:0 0 auto}
+  .coupon.used{filter:grayscale(1);opacity:.62}
+
+  .poster{border:1px dashed var(--brand-line);border-radius:14px;padding:16px;background:linear-gradient(160deg,#eef0ff,#fdf0ff);text-align:center}
+  .poster .qr{width:112px;height:112px;margin:10px auto;border-radius:12px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--muted-2);font-size:11px;line-height:1.5}
+
+  .rank-row{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--line-soft)}
+  .rank-row:last-child{border-bottom:0}
+  .rank-no{width:24px;height:24px;flex:0 0 24px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;background:#f1f2f5;color:#5b6371}
+  .rank-no.g1{background:#fff3e8;color:#c2410c}
+  .rank-no.g2{background:#eef0ff;color:#4f46e5}
+  .rank-no.g3{background:#eaf7ef;color:#0f9d58}
+  .rank-row .rn{font-weight:650;font-size:13px}
+  .rank-row .rk{font-size:11px;color:var(--muted-2)}
+  .rank-row .rv{margin-left:auto;font-weight:750;color:var(--brand);font-variant-numeric:tabular-nums}
+
+  @media (max-width:1080px){
+    .g4{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .g3,.steps{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .g-side{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<header class="topnav">
+  <div class="topnav-in">
+    <div class="brand" data-nav="home">
+      <div class="brand-mark">7</div>
+      <div class="brand-text">
+        <strong>七号电竞</strong>
+        <span>陪玩平台 · 客户端</span>
+      </div>
+    </div>
+    <nav class="navlinks" id="navigation"></nav>
+    <div class="nav-right">
+      <div class="pill pill-online">客服在线 12:00—14:00 / 18:00—23:00</div>
+      <div class="avatar">我</div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap" id="view"></div>
+
+<footer class="foot">
+  <div><b>七号电竞 · 陪玩平台</b>　平台为唯一下单入口，站外私下交易不受平台保障。</div>
+  <div>服务说明：本平台不向未成年人提供服务；服务过程中由您本人操作账号，我们不会索要账号密码、短信验证码，也不会代您登录。</div>
+  <div>演示原型 V1.0 · 样例数据 · 2026-10-14</div>
+</footer>
+
+<div id="toast" class="toast"></div>
+
+<script>
+/* =========================================================
+   七号电竞 · 客户端（电脑版）
+   ========================================================= */
+
+const LVRANK = {'普通':1,'魔王':2,'明星':3};
+const LEVEL_CLS = {'普通':'b-gray','魔王':'b-purple','明星':'b-gold'};
+const RATE = l => LVRANK[l]===1 ? 25 : 20;
+const SLOTS = ['12—14','16—18','18—20','20—22','22—24'];
+const DAYS = ['10-14 周三','10-15 周四','10-16 周五','10-17 周六','10-18 周日','10-19 周一','10-20 周二'];
+const MAPS = ['任意','零号大坝','长弓溪谷','潮汐监狱'];
+
+/* 产品矩阵与定价：对齐策划案 5.3 */
+const SERVICES = [
+  {id:'P1', name:'娱乐陪玩', price:25,  unit:'局',  risk:'低',   desc:'聊天、陪跑图、普通组队，适合新手与休闲玩家'},
+  {id:'P2', name:'技术陪玩', price:60,  unit:'小时',risk:'低',   desc:'带节奏、教资源点与路线，想提升效率选它'},
+  {id:'P3', name:'护航（保底版）', price:100, unit:'小时', risk:'中高', desc:'陪同进图、配合保护，含保底条款'},
+  {id:'P4', name:'战术教学', price:80,  unit:'小时',risk:'低',   desc:'地图资源点、撤离路线、赛后复盘'},
+  {id:'P5', name:'包周套餐', price:688, unit:'周',  risk:'低',   desc:'固定队友、优先派单、按单量折扣'}
+];
+
+const state = {
+  page:'home',
+  day:0,
+  seq:13,
+  booking:{svc:'P3', slot:'20—22', req:'魔王+', map:'零号大坝', age:false, risk:false},
+  staff:[
+    {id:'D01',name:'夜猫',level:'明星',maps:['零号大坝','长弓溪谷'],bad:0.4,rating:4.9,orders:214,status:'在线'},
+    {id:'D02',name:'十七',level:'明星',maps:['潮汐监狱'],bad:0.8,rating:4.8,orders:187,status:'在线'},
+    {id:'D03',name:'雷克',level:'魔王',maps:['零号大坝'],bad:1.6,rating:4.6,orders:132,status:'在线'},
+    {id:'D04',name:'阿枫',level:'魔王',maps:['长弓溪谷','任意'],bad:1.1,rating:4.7,orders:98,status:'在线'},
+    {id:'D05',name:'小北',level:'魔王',maps:['零号大坝'],bad:1.9,rating:4.5,orders:76,status:'排班中'},
+    {id:'D06',name:'阿泰',level:'普通',maps:['任意'],bad:2.4,rating:4.3,orders:41,status:'在线'},
+    {id:'D07',name:'老王',level:'普通',maps:['任意'],bad:3.1,rating:4.1,orders:33,status:'在线'},
+    {id:'D08',name:'木木',level:'普通',maps:['潮汐监狱'],bad:0.0,rating:4.4,orders:9, status:'离线'}
+  ],
+  myOrders:[
+    {id:'QH-1014-11',svc:'P3',slot:'21:00—23:00',amount:200,status:'待付款',date:'10-14',map:'零号大坝',guarantee:'3 局保 2 次撤离'},
+    {id:'QH-1014-05',svc:'P3',slot:'18:00—20:00',amount:200,status:'已接单',staff:'D01',voucher:true,date:'10-14',map:'零号大坝',guarantee:'3 局保 2 次撤离'},
+    {id:'QH-1014-02',svc:'P2',slot:'20:00—22:00',amount:120,status:'待接单',date:'10-14',map:'长弓溪谷'},
+    {id:'QH-1013-08',svc:'P5',slot:'包周 · 每晚 20:00',amount:688,status:'已完成',staff:'D02',voucher:true,date:'10-13',map:'任意'}
+  ],
+  sched:{},
+  /* —— V2 新增：店铺装修 / 会员营销 —— */
+  banner:0,
+  fx:{bg:true, music:false, snow:true},
+  coupons:[
+    {id:'C1', amount:15, min:60,  title:'新客通用券',   desc:'满 ¥60 可用 · 有效期至 10-31', used:false},
+    {id:'C2', amount:30, min:150, title:'护航专享券',   desc:'满 ¥150 可用 · 仅限护航类订单', used:false},
+    {id:'C3', amount:20, min:0,   title:'会员日折扣券', desc:'无门槛 · 白银会员专属', used:false},
+    {id:'C4', amount:50, min:300, title:'包周套餐券',   desc:'满 ¥300 可用 · 已使用', used:true}
+  ],
+  wallet:88.00,
+  memberLevel:'白银会员',
+  invite:{code:'QH7-8823', invited:3, reward:36},
+  tips:[
+    {id:'T1', to:'D01 夜猫', amount:10, time:'10-13 22:40'},
+    {id:'T2', to:'D02 十七', amount:20, time:'10-12 21:05'}
+  ],
+  ranksD:{
+    staff:[['夜猫','D01','明星',214],['十七','D02','明星',187],['雷克','D03','魔王',132],['阿枫','D04','魔王',98],['小北','D05','魔王',76]],
+    good:[['夜猫','D01','明星',98],['十七','D02','明星',96],['阿枫','D04','魔王',95],['雷克','D03','魔王',93],['小北','D05','魔王',90]],
+    tip:[['夜猫','D01','明星',458],['十七','D02','明星',392],['雷克','D03','魔王',266],['阿枫','D04','魔王',188],['阿泰','D06','普通',96]]
+  }
+};
+
+const $ = s => document.querySelector(s);
+const staffById = id => state.staff.find(s=>s.id===id);
+const svcById = id => SERVICES.find(s=>s.id===id);
+const money = n => '¥' + (Math.round(n*100)/100).toLocaleString('zh-CN');
+const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const statusCls = st => ({'待付款':'b-gray','待接单':'b-amber','已接单':'b-blue','已完成':'b-green'}[st]||'b-gray');
+const orderById = id => state.myOrders.find(o=>o.id===id);
+
+function toast(msg, ok){
+  const t = $('#toast'); t.textContent = msg; t.className = 'toast show' + (ok?' ok':'');
+  clearTimeout(t._tm); t._tm = setTimeout(()=>t.className='toast', 2600);
+}
+
+function initSched(){
+  state.sched = {};
+  DAYS.forEach((d,di)=>{
+    const map = {};
+    state.staff.forEach((s,si)=>{
+      map[s.id] = SLOTS.map((_,slotIdx)=>{
+        if(slotIdx>=4) return (si+di)%3!==0;
+        if(slotIdx===3) return (si+di)%5!==4;
+        if(slotIdx===2) return (si+di)%4!==3;
+        return (si+di)%2===0;
+      });
+    });
+    state.sched[d] = map;
+  });
+}
+function daySlotToIdx(slot){
+  if(!slot) return 3;
+  if(slot.indexOf('12')===0) return 0;
+  if(slot.indexOf('16')===0) return 1;
+  if(slot.indexOf('18')===0) return 2;
+  if(slot.indexOf('20')===0) return 3;
+  return 4;
+}
+/* 匹配预览：与派单引擎同规则（时段 ∩ 排班 ∩ 等级 ∩ 擅长地图） */
+function matchCandidates(order){
+  const day = DAYS[state.day];
+  const si = daySlotToIdx(order.slot);
+  const need = order.req==='不限' ? 0 : LVRANK[(order.req||'').replace('+','')] || 0;
+  const res = [];
+  state.staff.forEach(s=>{
+    if(s.status==='离线') return;
+    const row = state.sched[day] && state.sched[day][s.id];
+    if(!row || !row[si]) return;
+    let score = 100; const why = [];
+    if(need && LVRANK[s.level] < need){ score -= 26; why.push('等级差 1 档'); } else why.push('等级达标');
+    const mapOk = s.maps.indexOf('任意')>=0 || s.maps.indexOf(order.map)>=0 || order.map==='任意';
+    if(!mapOk){ score -= 12; why.push('非擅长地图'); } else why.push('地图匹配');
+    score -= Math.round(s.bad*3); if(s.bad>2) why.push('差评率偏高');
+    res.push({s, score:Math.max(38,Math.min(99,score)), why});
+  });
+  return res.sort((a,b)=>b.score-a.score).slice(0,3);
+}
+
+/* ========================= 页面 ========================= */
+function pageHome(){
+  return `
+  ${decorHtml()}
+  <section class="hero" style="margin-top:16px">
+    <div class="in">
+      <div class="kicker">平台唯一下单入口 · 全流程留痕</div>
+      <h1>不用等野队，也不用踩坑<br>找个靠谱的人陪你打《三角洲行动》</h1>
+      <p>娱乐陪玩、技术陪玩、护航（保底版）、战术教学、包周套餐——在平台自助选服务、选时段，系统按打手排班与等级自动匹配。先付款、后服务，凭证留痕、有客服、有售后。</p>
+      <div class="acts">
+        <button class="btn" data-nav="book">立即预约下单</button>
+        <button class="btn ghost" data-nav="safety">查看服务与安全规则</button>
+      </div>
+    </div>
+    <div class="feats">
+      <div class="ft"><b>15 分钟内</b><span>未接单自动转派下一位</span></div>
+      <div class="ft"><b>先付后服务</b><span>服务未开始可全额退款</span></div>
+      <div class="ft"><b>100%</b><span>订单与凭证全程留痕</span></div>
+      <div class="ft"><b>0 元</b><span>平台不额外收取服务费</span></div>
+    </div>
+  </section>
+
+  <div class="callout co-info" style="margin-top:16px">
+    <strong>本平台为唯一下单入口。</strong>请勿通过微信私聊、社群等站外渠道下单或转账；站外交易不进入订单台账，无法提供服务凭证、保底兑现与售后保障。
+  </div>
+
+  <div class="sec-title">服务与价格</div>
+  <div class="grid g3">
+    ${SERVICES.map(s=>`
+      <div class="svc" data-nav="book" data-bsvc="${s.id}">
+        <div class="top">
+          <div>
+            <div class="nm">${esc(s.name)}</div>
+            <div style="font-size:11.5px;color:var(--muted-2);margin-top:2px">编号 ${s.id}</div>
+          </div>
+          <div class="pr">${money(s.price)}<small> / ${esc(s.unit)}</small></div>
+        </div>
+        <div class="ds">${esc(s.desc)}</div>
+        <div class="tags">
+          <span class="badge ${s.risk==='中高'?'b-amber':'b-green'}">风险等级 ${esc(s.risk)}</span>
+          <span class="badge b-brand">平台内下单</span>
+        </div>
+      </div>`).join('')}
+  </div>
+
+  <div class="sec-title">下单流程</div>
+  <div class="steps">
+    <div class="step"><div class="n">1</div><div class="t">选服务与时段</div><div class="d">选择服务类型、期望时段、打手等级偏好与地图偏好</div></div>
+    <div class="step"><div class="n">2</div><div class="t">确认核验</div><div class="d">年龄核验 + 风险告知确认，两项都需勾选</div></div>
+    <div class="step"><div class="n">3</div><div class="t">在线支付</div><div class="d">付款后进入"待接单"，系统按排班自动匹配打手</div></div>
+    <div class="step"><div class="n">4</div><div class="t">服务与结单</div><div class="d">打手服务后上传凭证，您确认结单并评价</div></div>
+  </div>
+
+  <div class="sec-title">平台保障</div>
+  <div class="grid g2">
+    <div class="card">
+      <div class="card-h"><h3>我们对您的承诺</h3></div>
+      <div class="list">
+        <div class="li"><div class="li-ic b-green">✓</div><div><div class="t">不向未成年人提供服务</div><div class="d">下单前进行年龄核验，未通过不予接单</div></div></div>
+        <div class="li"><div class="li-ic b-green">✓</div><div><div class="t">不需要您的账号密码</div><div class="d">服务全程由您本人操作账号，我们不索要验证码、不代登录</div></div></div>
+        <div class="li"><div class="li-ic b-green">✓</div><div><div class="t">保底以补单 / 退款兑现</div><div class="d">护航类订单未达成约定目标，免费补单 / 补时或按比例退款</div></div></div>
+        <div class="li"><div class="li-ic b-green">✓</div><div><div class="t">凭证与台账可追溯</div><div class="d">每单留存结算截图、服务时长，纠纷时可举证</div></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h3>需要您知悉</h3></div>
+      <div class="callout co-warn">
+        游戏官方不鼓励此类付费服务，账号存在触发官方风控的风险；如发生账号异常，工作室不承担账号损失，但会协助您申诉。普通陪玩（P1 / P2 / P4）不涉及账号风险，试运营期优先开放。
+      </div>
+      <div class="kv" style="margin-top:10px"><span>服务未开始，您取消</span><span>全额退款</span></div>
+      <div class="kv"><span>服务已开始，您单方中断</span><span>按已完成局数 / 时长结算</span></div>
+      <div class="kv"><span>打手原因导致服务失败</span><span>免费补一局或按比例退款</span></div>
+      <div class="kv"><span>客服响应</span><span>24 小时内首次响应</span></div>
+    </div>
+  </div>`;
+}
+
+function pageBook(){
+  const b = state.booking;
+  const svc = svcById(b.svc);
+  const cands = matchCandidates({slot:b.slot, req:b.req, map:b.map});
+  return `
+  <div class="callout co-info" style="margin-bottom:16px">
+    平台为唯一下单入口：所有订单必须在本页面提交并在平台内支付。客服不会通过私聊为您代下单，也不会要求您向个人账户转账。
+  </div>
+
+  <div class="grid g-side">
+    <div class="card">
+      <div class="card-h"><h3>预约下单</h3><span class="hint">选时段 · 系统按打手排班匹配</span></div>
+
+      <div class="form-row">
+        <label class="tt">1 · 选择服务</label>
+        <div class="chips">
+          ${SERVICES.map(s=>`<button class="chip ${b.svc===s.id?'active':''}" data-bsvc="${s.id}">${esc(s.name)}<span class="p">${money(s.price)}/${esc(s.unit)}</span></button>`).join('')}
+        </div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:8px">${esc(svc.desc)}　风险等级：${esc(svc.risk)}</div>
+      </div>
+
+      <div class="form-row">
+        <label class="tt">2 · 期望时段</label>
+        <div class="chips">
+          ${SLOTS.map(sl=>`<button class="chip ${b.slot===sl?'active':''}" data-bslot="${sl}">${sl} 点</button>`).join('')}
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label class="tt">3 · 打手等级偏好</label>
+        <div class="chips">
+          ${['不限','普通+','魔王+','明星'].map(r=>`<button class="chip ${b.req===r?'active':''}" data-breq="${r}">${r}</button>`).join('')}
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label class="tt">4 · 地图偏好</label>
+        <div class="chips">
+          ${MAPS.map(m=>`<button class="chip ${b.map===m?'active':''}" data-bmap="${m}">${m}</button>`).join('')}
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label class="tt">5 · 下单前确认（两项必选）</label>
+        <label class="chk"><input type="checkbox" id="ckAge" ${b.age?'checked':''}>我确认已年满 18 周岁。平台不向未成年人提供服务，如信息不实需自行承担后果。</label>
+        <label class="chk"><input type="checkbox" id="ckRisk" ${b.risk?'checked':''}>我已阅读《风险告知书》：服务中由我本人操作账号；游戏官方对此类付费服务存在风控规则，相关风险由我知悉并自担。</label>
+      </div>
+
+      <div class="acts">
+        <button class="btn btn-primary btn-lg" data-book="1">提交预约 · ${money(svc.price)}</button>
+        <button class="btn btn-lg" data-bookreset="1">重置</button>
+      </div>
+      ${svc.id==='P3'?`<div class="callout co-warn" style="margin-top:14px">护航单保底条款：未达成约定目标时<strong>免费补单 / 补时或按比例退款</strong>。本平台不对游戏内具体结果（如物资产出）作承诺。</div>`:''}
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-h"><h3>这个时段，谁有空？</h3><span class="hint">实时匹配预览</span></div>
+        ${cands.map(c=>`
+          <div class="mrow">
+            <span class="badge ${LEVEL_CLS[c.s.level]}">${c.s.level}</span>
+            <b>${esc(c.s.name)}</b>
+            <span class="why">${c.why.join(' · ')}</span>
+            <span class="score">${c.score}</span>
+          </div>`).join('') || '<div class="empty">该时段暂无打手排班，可换个时段或提交需求等待排班补位</div>'}
+        <div class="callout co-info" style="margin-top:13px">下单后系统把需求推给匹配打手，<strong>15 分钟未接自动转派下一位</strong>；非客服在线时段也能自助下单。</div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h3>费用明细</h3></div>
+        <div class="kv"><span>服务</span><span>${esc(svc.name)}</span></div>
+        <div class="kv"><span>计价方式</span><span>${money(svc.price)} / ${esc(svc.unit)}</span></div>
+        <div class="kv"><span>期望时段</span><span>${esc(b.slot)} 点</span></div>
+        <div class="kv"><span>等级偏好</span><span>${esc(b.req)}</span></div>
+        <div class="kv"><span>地图偏好</span><span>${esc(b.map)}</span></div>
+        <div class="kv"><span>平台服务费</span><span>¥0（不额外收取）</span></div>
+        <div class="kv total"><span>需支付</span><span>${money(svc.price)}</span></div>
+        <div class="callout co-ok" style="margin-top:12px">多退少补规则：若实际服务时长少于所选时段，按实际时长结算差额原路退回。</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function pageMy(){
+  const list = state.myOrders;
+  const sum = list.filter(o=>o.status!=='待付款').reduce((a,b)=>a+b.amount,0);
+  return `
+  <div class="grid g4" style="margin-bottom:16px">
+    <div class="card" style="padding:15px 16px"><div style="font-size:12px;color:var(--muted)">我的订单</div><div style="font-size:25px;font-weight:750;letter-spacing:-.6px;margin:5px 0 1px">${list.length}</div><div style="font-size:11.5px;color:var(--muted-2)">全部来自平台自助下单</div></div>
+    <div class="card" style="padding:15px 16px"><div style="font-size:12px;color:var(--muted)">已支付</div><div style="font-size:25px;font-weight:750;letter-spacing:-.6px;margin:5px 0 1px">${money(sum)}</div><div style="font-size:11.5px;color:var(--muted-2)">不含待付款订单</div></div>
+    <div class="card" style="padding:15px 16px"><div style="font-size:12px;color:var(--muted)">进行中</div><div style="font-size:25px;font-weight:750;letter-spacing:-.6px;margin:5px 0 1px">${list.filter(o=>o.status==='待接单'||o.status==='已接单').length}</div><div style="font-size:11.5px;color:var(--muted-2)">匹配中 / 服务中</div></div>
+    <div class="card" style="padding:15px 16px"><div style="font-size:12px;color:var(--muted)">已完成</div><div style="font-size:25px;font-weight:750;letter-spacing:-.6px;margin:5px 0 1px">${list.filter(o=>o.status==='已完成').length}</div><div style="font-size:11.5px;color:var(--muted-2)">可申请售后 7 天</div></div>
+  </div>
+
+  <div class="card" style="padding:14px 6px 6px">
+    <div class="card-h" style="padding:0 11px"><h3>我的订单</h3><span class="hint">四阶段状态实时可见</span></div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th>订单号</th><th>下单日期</th><th>服务</th><th>时段</th><th>地图</th><th>金额</th><th>打手</th><th>状态</th><th>操作</th></tr></thead>
+        <tbody>
+          ${list.map(o=>`
+            <tr>
+              <td class="num">${o.id}</td>
+              <td style="font-size:12px;color:var(--muted)">${o.date}</td>
+              <td>${esc(svcById(o.svc).name)}</td>
+              <td>${esc(o.slot)}</td>
+              <td>${esc(o.map||'—')}</td>
+              <td class="num">${money(o.amount)}</td>
+              <td>${o.staff?esc(staffById(o.staff).name):'<span style="color:var(--muted-2)">匹配中</span>'}</td>
+              <td><span class="badge ${statusCls(o.status)}">${o.status}</span></td>
+              <td>
+                <div class="acts">
+                  ${o.status==='待付款'?`<button class="btn btn-sm btn-primary" data-pay="${o.id}">去支付</button>`:''}
+                  ${o.status==='已接单'&&o.voucher?`<button class="btn btn-sm btn-primary" data-confirm="${o.id}">确认结单</button>`:''}
+                  ${o.status==='已接单'&&!o.voucher?`<span style="font-size:12px;color:var(--muted-2)">等待打手上传凭证</span>`:''}
+                  ${o.status==='已完成'?`<button class="btn btn-sm" data-after="${o.id}">申请售后</button>`:''}
+                  ${o.status==='待接单'?`<button class="btn btn-sm" data-urge="${o.id}">催一下</button>`:''}
+                </div>
+              </td>
+            </tr>`).join('') || '<tr><td colspan="9"><div class="empty">还没有订单，去「预约下单」试一单</div></td></tr>'}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="callout co-info" style="margin-top:16px">
+    结单规则：服务完成后由您确认结单。若 24 小时内未操作，系统按自动确认处理。对服务有异议，可在结单后 7 天内提交售后，客服 24 小时内首次响应。
+  </div>`;
+}
+
+function pageSafety(){
+  return `
+  <div class="sec-title">服务说明与安全规则</div>
+  <div class="grid g2">
+    <div class="card">
+      <div class="card-h"><h3>我们的服务标准</h3></div>
+      <div class="list">
+        <div class="li"><div class="li-ic b-green">1</div><div><div class="t">提前 5 分钟上线</div><div class="d">不迟到、不放鸽子；迟到 15 分钟以上记差评</div></div></div>
+        <div class="li"><div class="li-ic b-green">2</div><div><div class="t">全程开麦沟通</div><div class="d">主动引导话题，不冷场</div></div></div>
+        <div class="li"><div class="li-ic b-green">3</div><div><div class="t">不中途退出、不挂机</div><div class="d">服务时长以对局记录为准</div></div></div>
+        <div class="li"><div class="li-ic b-green">4</div><div><div class="t">不索要额外费用或打赏</div><div class="d">您只在平台内按标价支付一次</div></div></div>
+        <div class="li"><div class="li-ic b-green">5</div><div><div class="t">不私自添加您的联系方式</div><div class="d">如打手提出加微信、私下转账，请立即举报</div></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h3>打手绝对红线</h3><span class="hint">触碰即清退</span></div>
+      <div class="list">
+        <div class="li"><div class="li-ic b-red">禁</div><div><div class="t">索要账号、密码、验证码或代登录</div><div class="d">我们永远不需要您的账号信息</div></div></div>
+        <div class="li"><div class="li-ic b-red">禁</div><div><div class="t">引导游戏物资 / 账号的现金交易</div><div class="d">官方明确整治，物品到手仍可能被追回</div></div></div>
+        <div class="li"><div class="li-ic b-red">禁</div><div><div class="t">引导站外下单、私收款项</div><div class="d">平台为唯一下单入口，站外交易无保障</div></div></div>
+        <div class="li"><div class="li-ic b-red">禁</div><div><div class="t">使用外挂 / 脚本 / DMA</div><div class="d">发现即清退，并配合官方处理</div></div></div>
+        <div class="li"><div class="li-ic b-red">禁</div><div><div class="t">辱骂、骚扰或任何擦边行为</div><div class="d">投诉核实成立直接清退</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-title">常见问题</div>
+  <div class="card">
+    <div class="kv"><span>可以加打手微信、私下约单吗？</span><span>不建议，站外交易不受平台保障</span></div>
+    <div class="kv"><span>服务是用我的账号吗？</span><span>是，全程由您本人操作账号</span></div>
+    <div class="kv"><span>护航没达成约定目标怎么办？</span><span>免费补单 / 补时或按比例退款</span></div>
+    <div class="kv"><span>赛季节奏会影响排班吗？</span><span>新赛季需求高峰，建议提前 1 天预约</span></div>
+    <div class="kv"><span>客服在线时段</span><span>12:00—14:00 / 18:00—23:00</span></div>
+    <div class="kv"><span>非客服在线时段能下单吗？</span><span>可以，自助下单后由系统自动匹配</span></div>
+  </div>
+
+  <div class="callout co-danger" style="margin-top:16px">
+    未成年人不予服务。下单前我们会核验年龄；如您未满 18 周岁，请勿下单，已付款订单将原路退回并留存记录。
+  </div>`;
+}
+
+/* ================== V2 新增：店铺装修 / 会员 / 排行榜 ================== */
+const BANNERS = [
+  {b:'新赛季护航保底上线',   p:'3 局保 2 次撤离，未达标免费补单 / 补时或按比例退款'},
+  {b:'首次下单立减 15 元',   p:'新客通用券已放入「会员中心」，满 ¥60 可用'},
+  {b:'邀请好友，双方得返利', p:'生成专属海报，好友下单你可得 5% 返利，上不封顶'}
+];
+function decorHtml(){
+  return `
+  <div class="banner">
+    ${BANNERS.map((s,i)=>`<div class="sl ${state.banner===i?'on':''}"><b>${esc(s.b)}</b><p>${esc(s.p)}</p></div>`).join('')}
+    <div class="dots">${BANNERS.map((_,i)=>`<i class="${state.banner===i?'on':''}" data-banner="${i}"></i>`).join('')}</div>
+  </div>
+  <div class="notice">
+    <span class="tag">店铺公告</span>
+    <div class="track"><span>10-14 起试行「先付款后服务」，服务未开始可全额退款。｜ 平台为唯一下单入口，站外交易不受保障。｜ 新赛季排班高峰，建议提前 1 天预约。｜ 邀请好友下单，双方各得返利。</span></div>
+  </div>
+  <div class="effect-row">
+    <span class="lb">店铺特效</span>
+    <span class="fx ${state.fx.bg?'on':''}" data-fx="bg">背景主题</span>
+    <span class="fx ${state.fx.music?'on':''}" data-fx="music">背景音乐</span>
+    <span class="fx ${state.fx.snow?'on':''}" data-fx="snow">飘落特效</span>
+  </div>`;
+}
+
+function pageMember(){
+  const c = state.coupons;
+  const avail = c.filter(x=>!x.used).length;
+  return `
+  <div class="grid g4" style="margin-bottom:16px">
+    <div class="card" style="padding:15px 16px"><div style="font-size:12px;color:var(--muted)">会员等级</div><div style="font-size:20px;font-weight:750;letter-spacing:-.5px;margin:5px 0 1px">${esc(state.memberLevel)}</div><div style="font-size:11.5px;color:var(--muted-2)">累计消费满 ¥1000 升黄金</div></div>
+    <div class="card" style="padding:15px 16px"><div style="font-size:12px;color:var(--muted)">账户余额</div><div style="font-size:20px;font-weight:750;letter-spacing:-.5px;margin:5px 0 1px">${money(state.wallet)}</div><div style="font-size:11.5px;color:var(--muted-2)">充值满 ¥200 赠 5%</div></div>
+    <div class="card" style="padding:15px 16px"><div style="font-size:12px;color:var(--muted)">可用优惠券</div><div style="font-size:20px;font-weight:750;letter-spacing:-.5px;margin:5px 0 1px">${avail} 张</div><div style="font-size:11.5px;color:var(--muted-2)">共 ${c.length} 张</div></div>
+    <div class="card" style="padding:15px 16px"><div style="font-size:12px;color:var(--muted)">邀请返利</div><div style="font-size:20px;font-weight:750;letter-spacing:-.5px;margin:5px 0 1px">${money(state.invite.reward)}</div><div style="font-size:11.5px;color:var(--muted-2)">已邀请 ${state.invite.invited} 人</div></div>
+  </div>
+
+  <div class="grid g-side">
+    <div>
+      <div class="card">
+        <div class="card-h"><h3>我的优惠券</h3><span class="hint">下单时自动匹配可用券</span></div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          ${c.map(x=>`
+            <div class="coupon ${x.used?'used':''}">
+              <div class="amt"><b>${money(x.amount)}</b><span>满 ${money(x.min)}</span></div>
+              <div class="info"><div class="t">${esc(x.title)}</div><div class="d">${esc(x.desc)}</div></div>
+              <div class="get">${x.used?'<span class="badge b-gray">已使用</span>':`<button class="btn btn-sm btn-primary" data-usecoupon="${x.id}">去使用</button>`}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h3>余额充值</h3><span class="hint">充值后下单可直接抵扣</span></div>
+        <div class="chips">
+          ${[50,100,200,500].map(v=>`<button class="chip" data-recharge="${v}">充 ¥${v}${v>=200?' 赠 '+Math.round(v*0.05):''}</button>`).join('')}
+        </div>
+        <div class="kv" style="margin-top:12px"><span>当前余额</span><span>${money(state.wallet)}</span></div>
+        <div class="callout co-warn" style="margin-top:12px">余额充值需接入微信支付商户号，需先完成<strong>个体工商户注册</strong>后才能正式开通；当前为演示占位，不会真实扣款。</div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h3>我的打赏记录</h3><span class="hint">打赏全额给到打手</span></div>
+        ${state.tips.map(t=>`<div class="kv"><span>${esc(t.to)}<span style="color:var(--muted-2);font-size:11px">　${esc(t.time)}</span></span><span>${money(t.amount)}</span></div>`).join('') || '<div class="empty">暂无打赏记录</div>'}
+        <div class="callout co-info" style="margin-top:12px">打赏为自愿行为，不影响服务质量与派单结果。</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-h"><h3>邀请好友 · 推广返利</h3></div>
+        <div class="poster">
+          <div style="font-size:14px;font-weight:750">七号电竞 · 陪玩平台</div>
+          <div style="font-size:11.5px;color:var(--muted);margin-top:4px">扫码进入，新客立减 15 元</div>
+          <div class="qr">专属海报<br>二维码占位</div>
+          <div style="font-size:11.5px;color:var(--muted)">邀请码 <b style="color:var(--text)">${state.invite.code}</b></div>
+          <button class="btn btn-primary btn-block" style="margin-top:12px" data-poster="1">生成我的专属海报</button>
+        </div>
+        <div class="kv" style="margin-top:12px"><span>返利比例</span><span>好友下单金额 5%</span></div>
+        <div class="kv"><span>已邀请</span><span>${state.invite.invited} 人</span></div>
+        <div class="kv"><span>累计返利</span><span>${money(state.invite.reward)}</span></div>
+        <div class="callout co-info" style="margin-top:12px">好友通过你的海报下单并完成服务后，返利自动结算到余额。</div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h3>会员等级权益</h3></div>
+        <div class="kv"><span>普通用户</span><span>无门槛 · 基础服务</span></div>
+        <div class="kv"><span>白银会员（当前）</span><span>下单 98 折 · 生日券</span></div>
+        <div class="kv"><span>黄金会员</span><span>95 折 · 优先派单 · 专属客服</span></div>
+        <div class="kv"><span>钻石会员</span><span>92 折 · 免排队 · 每月打赏券</span></div>
+        <div class="callout co-ok" style="margin-top:12px">升级条件：累计消费满 ¥1000 → 黄金；满 ¥3000 → 钻石。等级折扣由后台自定义配置。</div>
+        <button class="btn btn-block" style="margin-top:12px" data-nav="rank">查看排行榜 →</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function pageRank(){
+  const r = state.ranksD;
+  const list = (rows, valFn) => rows.map((x,i)=>`
+    <div class="rank-row">
+      <div class="rank-no ${i<3?'g'+(i+1):''}">${i+1}</div>
+      <div><div class="rn">${esc(x[0])}</div><div class="rk">${esc(x[1]||'')}${x[2]?' · '+esc(x[2]):''}</div></div>
+      <div class="rv">${valFn(x)}</div>
+    </div>`).join('');
+  return `
+  <div class="callout co-info" style="margin-bottom:16px">排行榜每小时更新一次。<strong>榜单排名只看服务实力与口碑</strong>，不参与派单权重，也不影响价格。</div>
+  <div class="grid g3">
+    <div class="card">
+      <div class="card-h"><h3>打手接单榜</h3><span class="hint">按累计完成单量</span></div>
+      ${list(r.staff, x=>x[3]+' 单')}
+    </div>
+    <div class="card">
+      <div class="card-h"><h3>评价口碑榜</h3><span class="hint">按近 30 天好评率</span></div>
+      ${list(r.good, x=>x[3]+'%')}
+    </div>
+    <div class="card">
+      <div class="card-h"><h3>打赏人气榜</h3><span class="hint">按收到打赏金额</span></div>
+      ${list(r.tip, x=>money(x[3]))}
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <div class="card-h"><h3>榜单规则</h3></div>
+    <div class="kv"><span>接单榜</span><span>累计已完成订单数，剔除取消单</span></div>
+    <div class="kv"><span>口碑榜</span><span>近 30 天好评率，差评核实成立的订单不计分</span></div>
+    <div class="kv"><span>打赏榜</span><span>累计收到打赏金额，打赏全额归打手</span></div>
+    <div class="callout co-warn" style="margin-top:12px">严禁刷单、刷好评。核实刷榜将清退打手并扣除未结佣金。</div>
+  </div>`;
+}
+
+/* ========================= 路由 ========================= */
+const PAGES = {
+  home:['新赛季，找个靠谱的队友','服务与价格 · 下单流程 · 平台保障'],
+  book:['预约下单','选服务与时段，系统按排班匹配'],
+  my:['我的订单','查看状态 · 确认结单 · 申请售后'],
+  member:['会员中心','优惠券 · 余额充值 · 邀请返利 · 会员权益'],
+  rank:['排行榜','打手接单榜 · 评价口碑榜 · 打赏人气榜'],
+  safety:['服务与安全规则','服务标准 · 打手红线 · 常见问题']
+};
+const NAVS = [['home','首页'],['book','预约下单'],['my','我的订单'],['member','会员中心'],['rank','排行榜'],['safety','服务与安全规则']];
+const RENDER = {home:pageHome, book:pageBook, my:pageMy, member:pageMember, rank:pageRank, safety:pageSafety};
+
+function renderNav(){
+  $('#navigation').innerHTML = NAVS.map(n=>
+    `<button data-nav="${n[0]}" class="${state.page===n[0]?'active':''}">${n[1]}</button>`).join('');
+}
+function render(){
+  $('#view').innerHTML = RENDER[state.page] ? RENDER[state.page]() : '<div class="empty">页面建设中</div>';
+  renderNav();
+}
+function go(page){ state.page = page; render(); window.scrollTo(0,0); }
+
+document.addEventListener('click', e=>{
+  const t = e.target.closest('[data-nav],[data-bsvc],[data-bslot],[data-breq],[data-bmap],[data-book],[data-bookreset],[data-pay],[data-confirm],[data-after],[data-urge],[data-banner],[data-fx],[data-usecoupon],[data-recharge],[data-poster]');
+  if(!t) return;
+  const d = t.dataset;
+
+  if(d.nav){ go(d.nav); return; }
+  if(d.banner!==undefined){ state.banner = +d.banner; render(); return; }
+  if(d.fx){ state.fx[d.fx] = !state.fx[d.fx]; render(); toast('店铺特效已'+(state.fx[d.fx]?'开启':'关闭'), state.fx[d.fx]); return; }
+  if(d.usecoupon){
+    const c = state.coupons.find(x=>x.id===d.usecoupon);
+    if(c && !c.used){ go('book'); toast('已选中优惠券「'+c.title+'」，下单时自动抵扣'); }
+    return;
+  }
+  if(d.recharge){ toast('演示占位：充值 ¥'+d.recharge+' 需接入微信支付商户号（需个体工商户），当前不产生真实扣款'); return; }
+  if(d.poster){ toast('演示占位：专属海报已生成（正式版需接入公众号/服务号后分享）', true); return; }
+  if(d.bsvc){ state.booking.svc = d.bsvc; if(state.page!=='book') state.page='book'; render(); return; }
+  if(d.bslot){ state.booking.slot = d.bslot; render(); return; }
+  if(d.breq){ state.booking.req = d.breq; render(); return; }
+  if(d.bmap){ state.booking.map = d.bmap; render(); return; }
+  if(d.bookreset){
+    state.booking = {svc:'P3',slot:'20—22',req:'魔王+',map:'零号大坝',age:false,risk:false};
+    render(); toast('表单已重置'); return;
+  }
+  if(d.book){
+    const b = state.booking;
+    if(!b.age || !b.risk){ toast('请先勾选两项确认（年龄核验 + 风险告知）'); return; }
+    const svc = svcById(b.svc);
+    const id = 'QH-1014-' + String(state.seq++).padStart(2,'0');
+    state.myOrders.unshift({
+      id, svc:b.svc, slot:b.slot+' 点', amount:svc.price, status:'待付款', date:'10-14',
+      map:b.map, guarantee: b.svc==='P3' ? '未达标免费补单/补时或按比例退款' : null
+    });
+    state.page = 'my'; render();
+    toast('预约已提交：' + id + '（待付款），请在订单中完成支付', true);
+    return;
+  }
+  if(d.pay){
+    const o = orderById(d.pay); o.status = '待接单'; render();
+    toast('支付成功：' + o.id + ' 进入待接单，匹配引擎开始工作', true); return;
+  }
+  if(d.confirm){
+    const o = orderById(d.confirm); o.status = '已完成'; render();
+    toast('已确认结单：' + o.id + '，感谢您的支持', true); return;
+  }
+  if(d.after){ toast('售后申请已提交，客服将在 24 小时内首次响应', true); return; }
+  if(d.urge){ toast('已提醒派单，若 15 分钟仍未匹配将自动转派下一位'); return; }
+});
+
+document.addEventListener('change', e=>{
+  if(e.target.id==='ckAge') state.booking.age = e.target.checked;
+  if(e.target.id==='ckRisk') state.booking.risk = e.target.checked;
+});
+
+initSched();
+render();
+
+/* BANNER 自动轮播（仅切换首页，避免整页重绘） */
+setInterval(()=>{
+  if(state.page!=='home') return;
+  state.banner = (state.banner+1) % BANNERS.length;
+  const sls = document.querySelectorAll('.banner .sl');
+  const dots = document.querySelectorAll('.banner .dots i');
+  if(!sls.length) return;
+  sls.forEach((s,i)=>s.classList.toggle('on', i===state.banner));
+  dots.forEach((s,i)=>s.classList.toggle('on', i===state.banner));
+}, 4200);
+</script>
+</body>
+</html>
